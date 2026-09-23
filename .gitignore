@@ -1,0 +1,8 @@
+.DS_Store
+# Source photos not used by any page (WhatsApp originals and old/unused images) stay off the public site
+images/WhatsApp*
+images/beach.jpg
+images/cover.jpg
+images/hero.jpg
+images/old-logo.jpg
+images/staffy.jpg

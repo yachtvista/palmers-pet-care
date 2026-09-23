@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms | Palmer’s Pet Care Selsey</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a>
+      <a class="customer-login" href="login.html">Customer Login</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><b>Menu</b></button>
+      <nav id="site-nav"><ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#prices">Prices</a></li>
+        <li><a href="index.html#gallery">Gallery</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul></nav>
+    </div>
+  </header>
+  <div class="page-head"><h1>Terms of service</h1></div>
+  <section>
+    <div class="wrap legal">
+
+      <h2>1. Who I am</h2>
+      <p>Palmer’s Pet Care is a one-person pet-care service based on East Street, Selsey, West Sussex. I offer dog walking, home visits and house-sitting in the client’s own home. I do not drive and I do not board animals at my house.</p>
+
+      <h2>2. Bookings</h2>
+      <p>A booking is only confirmed when I have agreed the dates, times and price in writing (text or email) and, for a new client, after a free meet and greet. I do not take keys or start paid work until we have met you and your pet.</p>
+      <p>Prices on the website are a guide. The price we agree at the meet and greet is the price that applies.</p>
+
+      <h2>3. Area</h2>
+      <p>The core area is East Street, Seal Bay and streets I can reach on foot in about fifteen minutes. West Beach and further addresses are by arrangement and may carry the published add-on.</p>
+
+      <h2>4. Your responsibilities</h2>
+      <ul>
+        <li>Give honest information about your pet’s health, behaviour, diet, medication and any bite or chase history.</li>
+        <li>Keep vaccinations, flea and worming up to date.</li>
+        <li>Provide a safe collar or harness, ID tag, lead and, for visits, working keys or access.</li>
+        <li>Leave enough food, litter and any medicine, with written instructions.</li>
+        <li>Tell me if anyone else will be in the house or if cameras are in use.</li>
+      </ul>
+
+      <h2>5. How I work</h2>
+      <p>Walks are one household at a time unless we agree otherwise. I walk on lead unless you have given written permission for a secure off-lead area. I am not a trainer or a vet. In an emergency I will contact you, then your nominated emergency contact, then a local vet if needed. Reasonable vet costs remain yours unless they arise from my proven negligence and fall within my insurance.</p>
+
+      <h2>6. Keys and your home</h2>
+      <p>Keys are kept securely and used only for the agreed visits. I will not copy keys. I am not a housekeeper, but I will tidy obvious mess from the visit, bring post in and leave the house as I found it. Loss of keys is covered only to the limit of my key insurance once that policy is in force.</p>
+
+      <h2>7. Cancellation</h2>
+      <p>Please give at least 24 hours’ notice to cancel a walk or visit, and 48 hours for house-sitting. Late cancels may be charged in full. If I have to cancel I will tell you as soon as I can and will not charge that booking.</p>
+      <p>Bank holidays may carry the published surcharge.</p>
+
+      <h2>8. Payment</h2>
+      <p>Payment is due as agreed at booking — usually after the walk or visit, or in advance for sits and packages. Packages do not earn loyalty stamps. The 10th free walk applies only to full-price pay-as-you-go walks in the core area.</p>
+
+      <h2>9. Insurance, DBS and first aid</h2>
+      <p>Paid work starts only when public liability and care-custody-control cover are in force. Palmer’s Pet Care is fully insured and DBS checked. Certificates can be shown at the meet and greet.</p>
+
+      <h2>10. Photos</h2>
+      <p>I may send you photos of your pet during a visit. I will not put client pets on the website or social media without your permission.</p>
+
+      <h2>11. Liability</h2>
+      <p>I take reasonable care of your pet and your home. I am not liable for illness, injury or behaviour that I could not reasonably have prevented, for items you leave out, or for events outside my control (weather, road closures, sudden illness). Nothing in these terms limits liability for death or personal injury caused by negligence.</p>
+
+      <h2>12. Ending the arrangement</h2>
+      <p>Either of us can stop future bookings by message. I can refuse or end a booking if a pet is unsafe to handle, if information was withheld, or if payment is outstanding.</p>
+
+      <h2>13. Law</h2>
+      <p>These terms are governed by the law of England and Wales.</p>
+      <p>Questions: use the <a href="contact.html">contact page</a>.</p>
+    </div>
+  </section>
+  <footer><div class="wrap foot"><p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p><p><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="contact.html">Contact</a></p></div></footer>
+  <script>const toggle=document.querySelector('.menu-toggle'),nav=document.querySelector('#site-nav');if(toggle&&nav){const close=()=>{toggle.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')};toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));document.body.classList.toggle('menu-open',!open)});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})}</script>
+</body>
+</html>

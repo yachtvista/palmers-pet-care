@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gallery | Palmer’s Pet Care Selsey</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a>
+      <a class="customer-login" href="login.html">Customer Login</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><b>Menu</b></button>
+      <nav id="site-nav"><ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#prices">Prices</a></li>
+        <li><a href="index.html#gallery">Gallery</a></li>
+        <li><a href="index.html#contact">Contact us</a></li>
+      </ul></nav>
+    </div>
+  </header>
+  <div class="page-head"><h1>Gallery</h1></div>
+  <section>
+    <div class="wrap">
+      <p class="lede">Some of the dogs and cats already in the house. Client photos only go up with permission.</p>
+      <div class="gallery">
+        <img src="images/jessie.jpg" alt="Jessie">
+        <img src="images/cat-sit.jpg" alt="Black cat">
+        <img src="images/dachshunds.jpg" alt="Dachshunds">
+        <img src="images/puppy.jpg" alt="Puppy">
+        <img src="images/cat-close.jpg" alt="Cat close up">
+        <img src="images/dachshund-sofa.jpg" alt="Dachshund on the sofa">
+        <img src="images/cats-play.jpg" alt="Cats playing">
+        <img src="images/dachshunds-play.jpg" alt="Dachshunds playing">
+        <img src="images/murphy-lie.jpg" alt="Murphy in a puddle">
+        <img src="images/murphy-puddle.jpg" alt="Murphy on a wet path">
+        <img src="images/sphynx.jpg" alt="Sphynx cat">
+      </div>
+    </div>
+  </section>
+  <footer><div class="wrap foot"><p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p><p><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="contact.html">Contact</a></p></div></footer>
+  <script>const toggle=document.querySelector('.menu-toggle'),nav=document.querySelector('#site-nav');if(toggle&&nav){const close=()=>{toggle.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')};toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));document.body.classList.toggle('menu-open',!open)});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})}</script>
+</body>
+</html>

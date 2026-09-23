@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact | Palmer’s Pet Care Selsey</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a>
+      <a class="customer-login" href="login.html">Customer Login</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><b>Menu</b></button>
+      <nav id="site-nav"><ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#prices">Prices</a></li>
+        <li><a href="index.html#gallery">Gallery</a></li>
+        <li><a href="index.html#contact">Contact us</a></li>
+      </ul></nav>
+    </div>
+  </header>
+  <div class="page-head"><h1>Get in touch</h1></div>
+  <section>
+    <div class="wrap">
+      <p class="lede">Questions or a booking — send a note. Replace the email below with her real address before the site goes live.</p>
+      <form class="secure-form" action="mailto:enquiries@palmerspetcare.co.uk" method="post" enctype="text/plain">
+        <label for="name">Your name</label>
+        <input id="name" name="name" required>
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel">
+        <label for="service">Service</label>
+        <select id="service" name="service">
+          <option>Dog walking</option>
+          <option>Home visit</option>
+          <option>House-sitting</option>
+          <option>Not sure yet</option>
+        </select>
+        <label for="message">About your pet</label>
+        <textarea id="message" name="message" placeholder="Name, breed, rough street, days you need."></textarea>
+        <div class="captcha-box">
+          <p class="captcha-label">Please confirm you’re human</p>
+          <!-- Replace the placeholder with the production Turnstile site key. The token must be verified server-side before accepting submissions. -->
+          <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="light"></div>
+          <p class="form-note">CAPTCHA protection will be active once the site key and server verification endpoint are connected.</p>
+        </div>
+        <button class="btn" type="submit">Send</button>
+      </form>
+    </div>
+  </section>
+  <footer><div class="wrap foot"><p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p><p>Facebook: Palmer’s Pet Care Selsey</p></div></footer>
+  <script>const toggle=document.querySelector('.menu-toggle'),nav=document.querySelector('#site-nav');if(toggle&&nav){const close=()=>{toggle.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')};toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));document.body.classList.toggle('menu-open',!open)});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})}</script>
+</body>
+</html>

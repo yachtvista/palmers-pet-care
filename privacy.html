@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy | Palmer’s Pet Care Selsey</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a>
+      <a class="customer-login" href="login.html">Customer Login</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><b>Menu</b></button>
+      <nav id="site-nav"><ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#prices">Prices</a></li>
+        <li><a href="index.html#gallery">Gallery</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul></nav>
+    </div>
+  </header>
+  <div class="page-head"><h1>Privacy notice</h1></div>
+  <section>
+    <div class="wrap legal">
+
+      <h2>Who holds the data</h2>
+      <p>Palmer’s Pet Care, East Street, Selsey, West Sussex, is the controller for personal data collected through this website and through bookings. Contact via the <a href="contact.html">contact page</a>.</p>
+
+      <h2>What I collect</h2>
+      <ul>
+        <li>Name, phone, email and address if you enquire or book.</li>
+        <li>Pet name, species, vet details, medication and behaviour notes.</li>
+        <li>Key-holding details and access instructions.</li>
+        <li>Payment records (amount and date — I do not store card numbers).</li>
+        <li>Photos of your pet if you allow them.</li>
+      </ul>
+      <p>The contact form is a simple email form. Once you replace the placeholder address, messages go to that inbox. This static site does not use advertising cookies or analytics unless you add them later.</p>
+
+      <h2>Why I use it</h2>
+      <p>To reply to you, to deliver the service safely, to keep keys and access notes, to invoice, and to meet insurance or legal duties. The legal bases are contract (a booking), legitimate interests (running a small local service and keeping people and animals safe), and consent (photos on the website or social media).</p>
+
+      <h2>Who I share it with</h2>
+      <p>I do not sell data. I may share what is needed with:</p>
+      <ul>
+        <li>Your nominated emergency contact.</li>
+        <li>A vet in an emergency.</li>
+        <li>My insurer if there is a claim.</li>
+        <li>HMRC or the police if the law requires it.</li>
+      </ul>
+      <p>Email and files may sit on Google (Gmail / Drive) once Workspace is set up. Google is a processor under its own terms.</p>
+
+      <h2>How long I keep it</h2>
+      <p>Enquiry messages that do not become bookings: up to 12 months. Client and pet records: while you use the service and for six years after the last booking (tax and insurance). Photos stay only while you are happy for them to.</p>
+
+      <h2>Your rights</h2>
+      <p>You can ask for a copy of your data, ask me to correct it, delete it where I have no need to keep it, or object to a use. You can complain to the Information Commissioner’s Office at <a href="https://ico.org.uk">ico.org.uk</a>.</p>
+      <p>I am a small sole trader. ICO registration is only required if you meet their current criteria (for example CCTV or certain types of processing). Check <a href="https://ico.org.uk">ico.org.uk</a> once bookings start.</p>
+
+      <h2>Children</h2>
+      <p>This service is for adult owners. I do not knowingly collect data from children.</p>
+    </div>
+  </section>
+  <footer><div class="wrap foot"><p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p><p><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="contact.html">Contact</a></p></div></footer>
+  <script>const toggle=document.querySelector('.menu-toggle'),nav=document.querySelector('#site-nav');if(toggle&&nav){const close=()=>{toggle.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')};toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));document.body.classList.toggle('menu-open',!open)});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})}</script>
+</body>
+</html>

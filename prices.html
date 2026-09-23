@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prices | Palmer’s Pet Care Selsey</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a>
+      <a class="customer-login" href="login.html">Customer Login</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><b>Menu</b></button>
+      <nav id="site-nav"><ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#prices">Prices</a></li>
+        <li><a href="index.html#gallery">Gallery</a></li>
+        <li><a href="index.html#contact">Contact us</a></li>
+      </ul></nav>
+    </div>
+  </header>
+  <div class="page-head"><h1>Price list</h1></div>
+  <section>
+    <div class="wrap">
+      <p class="lede">Core Selsey from East Street and Seal Bay. Prices confirmed at the meet and greet. Bank holidays +50%.</p>
+      <div class="prices">
+        <article class="price">
+          <h3>Dog walking</h3>
+          <p class="amount">from £16</p>
+          <ul>
+            <li>30 minutes, 1 dog — £16</li>
+            <li>60 minutes, 1 dog — £22</li>
+            <li>Extra dog, same house — +£5</li>
+            <li>West Beach add-on — +£3</li>
+          </ul>
+        </article>
+        <article class="price">
+          <h3>Home visits</h3>
+          <p class="amount">from £14</p>
+          <ul>
+            <li>20–30 minutes — £14</li>
+            <li>45–60 minutes — £19</li>
+            <li>Second visit same day — £12</li>
+            <li>Extra cat or small pet — +£3</li>
+          </ul>
+        </article>
+        <article class="price">
+          <h3>House-sitting</h3>
+          <p class="amount">from £40</p>
+          <ul>
+            <li>Overnight in your home from £40</li>
+            <li>Extra dog — +£8</li>
+            <li>Extra cat — +£4</li>
+          </ul>
+        </article>
+        <article class="price">
+          <h3>Weekly packages</h3>
+          <p class="amount">from £65</p>
+          <ul>
+            <li>5 × 30-min walks — £72</li>
+            <li>10 × 30-min walks — £138</li>
+            <li>5 × home visits — £65</li>
+            <li>Packages do not earn loyalty stamps</li>
+          </ul>
+        </article>
+      </div>
+      <p class="lede" style="margin-top:1.6rem">Loyalty card: 9 full-price walks, 10th free in the core zone.</p>
+      <p style="text-align:center"><a class="btn" href="contact.html">Enquire</a></p>
+    </div>
+  </section>
+  <footer><div class="wrap foot"><p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p><p><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="contact.html">Contact</a></p></div></footer>
+  <script>const toggle=document.querySelector('.menu-toggle'),nav=document.querySelector('#site-nav');if(toggle&&nav){const close=()=>{toggle.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')};toggle.addEventListener('click',()=>{const open=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!open));document.body.classList.toggle('menu-open',!open)});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})}</script>
+</body>
+</html>
