@@ -8,6 +8,7 @@
   <link rel="icon" href="images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -169,8 +170,13 @@
         <input id="phone" name="phone" type="tel">
         <label for="message">About your pet</label>
         <textarea id="message" name="message" placeholder="Name, breed, East Street / Seal Bay / other, days you need."></textarea>
-        <button class="btn navy" type="submit">Send enquiry</button>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light" data-callback="palmersEnquiryReady"></div>
+        <button class="btn navy" type="submit" id="enquiry-send" disabled>Send enquiry</button>
       </form>
+      <script>
+        // The Send button stays off until Cloudflare Turnstile has checked the visitor.
+        function palmersEnquiryReady() { var b = document.getElementById('enquiry-send'); if (b) b.disabled = false; }
+      </script>
     </div>
   </section>
 

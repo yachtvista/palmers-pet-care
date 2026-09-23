@@ -45,11 +45,14 @@
         <div class="captcha-box">
           <p class="captcha-label">Please confirm you’re human</p>
           <!-- Replace the placeholder with the production Turnstile site key. The token must be verified server-side before accepting submissions. -->
-          <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="light"></div>
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light" data-callback="palmersEnquiryReady"></div>
           <p class="form-note">CAPTCHA protection will be active once the site key and server verification endpoint are connected.</p>
         </div>
-        <button class="btn" type="submit">Send</button>
+        <button class="btn" type="submit" id="enquiry-send" disabled>Send</button>
       </form>
+      <script>
+        function palmersEnquiryReady() { var b = document.getElementById('enquiry-send'); if (b) b.disabled = false; }
+      </script>
     </div>
   </section>
   <footer><div class="wrap foot"><p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p><p>Facebook: Palmer’s Pet Care Selsey</p></div></footer>
