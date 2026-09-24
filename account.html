@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your pet | Palmer’s Pet Care</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portal.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body class="account-page">
+  <div class="pp-shell" data-portal="account">
+    <aside class="pp-side">
+      <a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a>
+      <nav aria-label="Account">
+        <p class="pp-eyebrow">Your account</p>
+        <a href="account.html" aria-current="page">Your pet</a>
+        <a href="admin.html" data-admin-link hidden>All customers</a>
+        <a href="prices.html">Prices</a>
+        <a href="contact.html">Contact us</a>
+        <button type="button" data-signout>Sign out</button>
+      </nav>
+      <footer>Signed in securely · Your details stay private.</footer>
+    </aside>
+    <main class="pp-main">
+      <div class="pp-dash" data-dash>
+        <header class="pp-dash-head">
+          <p class="pp-kicker">Your customer account</p>
+          <h1>Hello, <span data-owner-first>…</span>.</h1>
+          <p class="pp-dash-sub">Happy pets. Peace of mind. Everything in one place.</p>
+        </header>
+
+        <div class="pp-row1">
+          <section class="pp-pets-card" aria-labelledby="pets-heading">
+            <div class="pp-pets-head">
+              <h2 id="pets-heading">Your pets <span class="pp-pill" data-pet-count aria-label="Number of pets">0</span></h2>
+              <button type="button" class="pp-primary" data-add-pet><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add a pet</button>
+            </div>
+            <div class="pp-chips" role="tablist" aria-label="Choose a pet" data-chips></div>
+            <div data-profile></div>
+          </section>
+
+          <aside class="pp-about" aria-labelledby="about-heading">
+            <div class="pp-about-head">
+              <span class="pp-owner-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <div>
+                <p class="pp-kicker">About you · Owner</p>
+                <h2 id="about-heading" data-owner-fullname>…</h2>
+                <p class="pp-about-sub">Your contact details.</p>
+              </div>
+            </div>
+            <hr class="pp-rule">
+            <dl class="pp-details">
+              <div><dt>Email address</dt><dd data-owner-email>…</dd></div>
+              <div><dt>Mobile number</dt><dd data-owner-phone>…</dd></div>
+              <div><dt>Home address</dt><dd data-owner-address>…</dd></div>
+            </dl>
+            <button type="button" class="pp-primary" data-edit-owner><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Edit your details</button>
+          </aside>
+        </div>
+
+        <section class="pp-diary-card" aria-labelledby="diary-heading" data-diary-card>
+          <div class="pp-diary-head">
+            <div>
+              <p class="pp-kicker">Little moments, while you’re away</p>
+              <h2 id="diary-heading" data-diary-title>Photo diary</h2>
+            </div>
+            <p class="pp-diary-note">Newest first · UK time</p>
+          </div>
+          <div data-diary-body></div>
+        </section>
+      </div>
+
+      <!-- Pet add / edit -->
+      <dialog class="pp-modal" data-modal="pet" aria-labelledby="pet-modal-title">
+        <form method="dialog" class="pp-form" novalidate data-pet-form>
+          <div class="pp-modal-head"><h2 id="pet-modal-title" data-pet-modal-title>Add a pet</h2><button type="button" class="pp-close" data-close aria-label="Close">×</button></div>
+          <div class="pp-fields">
+            <label for="pf-name">Pet’s name<input id="pf-name" name="name" required maxlength="80" autocomplete="off"></label>
+            <div class="pp-two-fields">
+              <label for="pf-species">Species<select id="pf-species" name="species" required></select></label>
+              <label for="pf-age">Age<select id="pf-age" name="age" required></select></label>
+            </div>
+            <label for="pf-breed" data-field="breed" hidden>Breed<input id="pf-breed" name="breed" maxlength="80"></label>
+            <label for="pf-diet">Feeding routine<textarea id="pf-diet" name="diet" rows="2" maxlength="1000" placeholder="e.g. Wet food, twice daily"></textarea></label>
+            <label for="pf-notes">Personality &amp; care notes<textarea id="pf-notes" name="notes" rows="3" maxlength="1000" placeholder="Temperament, quirks, anything we should know…"></textarea></label>
+            <details class="pp-more">
+              <summary>More care details</summary>
+              <label for="pf-medication">Medication<textarea id="pf-medication" name="medication" rows="2" maxlength="1000" placeholder="What it is, the dose, and how it is given"></textarea></label>
+              <label for="pf-frequency">How often<select id="pf-frequency" name="medicationFrequency"></select></label>
+              <label for="pf-likes">Likes<textarea id="pf-likes" name="likes" rows="2" maxlength="1000"></textarea></label>
+              <label for="pf-dislikes">Dislikes<textarea id="pf-dislikes" name="dislikes" rows="2" maxlength="1000"></textarea></label>
+            </details>
+          </div>
+          <p class="pp-form-error" role="alert" data-error></p>
+          <div class="pp-modal-actions"><button type="button" class="pp-secondary" data-close>Cancel</button><button type="submit" class="pp-primary" data-submit>Save</button></div>
+        </form>
+      </dialog>
+
+      <!-- Owner edit -->
+      <dialog class="pp-modal" data-modal="owner" aria-labelledby="owner-modal-title">
+        <form method="dialog" class="pp-form" novalidate data-owner-form>
+          <div class="pp-modal-head"><h2 id="owner-modal-title">Edit your details</h2><button type="button" class="pp-close" data-close aria-label="Close">×</button></div>
+          <div class="pp-fields">
+            <label for="of-name">Full name<input id="of-name" name="name" required maxlength="120" autocomplete="name"></label>
+            <label for="of-email">Email address<input id="of-email" name="email" type="email" disabled></label>
+            <p class="pp-hint">To change your email address, please <a href="contact.html">contact us</a>.</p>
+            <label for="of-phone">Mobile number<input id="of-phone" name="phone" type="tel" maxlength="40" autocomplete="tel"></label>
+            <label for="of-address" data-field="address" hidden>Home address<textarea id="of-address" name="address" rows="3" maxlength="300" autocomplete="street-address"></textarea></label>
+          </div>
+          <p class="pp-form-error" role="alert" data-error></p>
+          <div class="pp-modal-actions"><button type="button" class="pp-secondary" data-close>Cancel</button><button type="submit" class="pp-primary" data-submit>Save</button></div>
+        </form>
+      </dialog>
+
+      <!-- Remove pet -->
+      <dialog class="pp-modal pp-modal-sm" data-modal="confirm" aria-labelledby="confirm-title">
+        <form method="dialog" class="pp-form" data-confirm-form>
+          <div class="pp-modal-head"><h2 id="confirm-title">Remove <span data-confirm-name>this pet</span>?</h2><button type="button" class="pp-close" data-close aria-label="Close">×</button></div>
+          <p class="pp-confirm-text">This removes <span data-confirm-name>this pet</span>’s profile and photo diary from your account. It can’t be undone.</p>
+          <p class="pp-form-error" role="alert" data-error></p>
+          <div class="pp-modal-actions"><button type="button" class="pp-secondary" data-close>Keep pet</button><button type="submit" class="pp-danger" data-submit>Remove pet</button></div>
+        </form>
+      </dialog>
+
+      <!-- Lightbox -->
+      <dialog class="pp-lightbox" data-modal="lightbox" aria-label="Photo">
+        <button type="button" class="pp-close pp-lightbox-close" data-close aria-label="Close">×</button>
+        <figure><img alt="" data-lightbox-img><figcaption><span data-lightbox-time></span><strong data-lightbox-caption></strong></figcaption></figure>
+      </dialog>
+    </main>
+  </div>
+  <script src="portal.js"></script>
+</body></html>

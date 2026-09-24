@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All customers | Palmer’s Pet Care</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="portal.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body class="account-page">
+  <div class="pp-shell" data-portal="admin">
+    <aside class="pp-side">
+      <a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a>
+      <nav aria-label="Account">
+        <p class="pp-eyebrow">Your account</p>
+        <a href="account.html">Your pet</a>
+        <a href="admin.html" aria-current="page" data-admin-link>All customers</a>
+        <a href="prices.html">Prices</a>
+        <a href="contact.html">Contact us</a>
+        <button type="button" data-signout>Sign out</button>
+      </nav>
+      <footer>Signed in securely · Your details stay private.</footer>
+    </aside>
+    <main class="pp-main">
+      <p class="pp-eyebrow">Admin</p>
+      <h1>Customers and their pets</h1>
+      <p class="pp-lede">Every registered owner with the pet details they gave us. Only admin accounts can see this page.</p>
+      <div class="pp-toolbar"><input type="search" placeholder="Search owner, email or pet" data-search aria-label="Search customers"><span class="pp-count" data-count>…</span></div>
+      <div data-customers></div>
+    </main>
+  </div>
+  <script src="portal.js"></script>
+</body></html>

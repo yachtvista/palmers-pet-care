@@ -2,8 +2,25 @@
 <html lang="en-GB">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign in | Palmer’s Pet Care</title><link rel="icon" href="images/logo.png"><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
+  <title>Sign in | Palmer’s Pet Care</title>
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="portal.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
-<body class="account-page"><header class="topbar"><div class="wrap topbar-inner"><a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a><a class="back-link" href="index.html">← Back to site</a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><b>Menu</b></button><nav id="site-nav"><ul><li><a href="index.html#about">About</a></li><li><a href="index.html#prices">Prices</a></li><li><a href="index.html#gallery">Gallery</a></li><li><a href="index.html#contact">Contact</a></li></ul></nav></div></header>
-<main class="account-shell"><div class="account-card"><p class="eyebrow">Client account</p><h1>Welcome back</h1><p class="account-intro">Sign in to view your pet details and enquiries.</p><form class="account-form" data-account-form="login"><label for="login-email">Email address</label><input id="login-email" name="email" type="email" autocomplete="email" required><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" required><div class="form-row"><label class="check-label"><input type="checkbox" name="remember"> Remember me</label><a href="forgot-password.html">Forgotten password?</a></div><button class="btn" type="submit">Sign in</button><p class="form-status" role="status" aria-live="polite"></p></form><p class="account-switch">New to Palmer’s Pet Care? <a href="register.html">Create an account</a></p><p class="form-note account-note">Secure sign-in will be available when the authentication backend is connected.</p></div></main><footer><div class="wrap foot"><p>Palmer’s Pet Care · Selsey</p><p><a href="contact.html">Contact</a> · <a href="privacy.html">Privacy</a></p></div></footer>
-<script>document.querySelector('[data-account-form]').addEventListener('submit',e=>{e.preventDefault();e.currentTarget.querySelector('.form-status').textContent='Sign-in is not connected yet. Please use the Contact page while the secure account service is being set up.'});const t=document.querySelector('.menu-toggle'),n=document.querySelector('#site-nav');if(t&&n){const c=()=>{t.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')};t.onclick=()=>{const o=t.getAttribute('aria-expanded')==='true';t.setAttribute('aria-expanded',String(!o));document.body.classList.toggle('menu-open',!o)};n.onclick=e=>{if(e.target.closest('a'))c()};document.onkeydown=e=>{if(e.key==='Escape')c()}}</script></body></html>
+<body class="account-page">
+  <header class="topbar"><div class="wrap topbar-inner"><a class="brand" href="index.html"><img src="images/logo.png" alt="Palmer’s Pet Care"><span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span></a><a class="back-link" href="index.html">← Back to site</a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span><b>Menu</b></button><nav id="site-nav"><ul><li><a href="index.html#about">About</a></li><li><a href="index.html#prices">Prices</a></li><li><a href="index.html#gallery">Gallery</a></li><li><a href="index.html#contact">Contact</a></li></ul></nav></div></header>
+  <main class="account-shell"><div class="account-card"><p class="eyebrow">Client account</p><h1>Welcome back</h1><p class="account-intro">Sign in to see your pet’s details.</p>
+    <form class="account-form" data-account-form="login">
+      <label for="login-email">Email address</label><input id="login-email" name="email" type="email" autocomplete="email" required>
+      <label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" required>
+      <div class="form-row"><span></span><a href="forgot-password.html">Forgotten password?</a></div>
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light"></div>
+      <button class="btn" type="submit">Sign in</button>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </form>
+    <p class="account-switch">New to Palmer’s Pet Care? <a href="register.html">Register your pet</a></p>
+  </div></main>
+  <footer><div class="wrap foot"><p>Palmer’s Pet Care · Selsey</p><p><a href="contact.html">Contact</a> · <a href="privacy.html">Privacy</a></p></div></footer>
+  <script src="portal.js"></script>
+</body></html>
