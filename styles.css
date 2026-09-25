@@ -156,6 +156,7 @@ body.lightbox-open { overflow: hidden; }
 .trust { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; margin: 1rem 0 1.1rem; }
 .trust div { background: #f4f7f8; border-radius: 8px; padding: .85rem .6rem; text-align: center; font-size: .82rem; color: var(--navy); font-weight: 600; }
 .intro p { color: var(--muted); }
+.cta-row { text-align: center; margin-top: 2.4rem; }
 
 .panel { background: #fff; padding: 2.6rem 0; }
 .panel.alt { background: #f7f4ee; }
