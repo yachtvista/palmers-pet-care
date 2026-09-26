@@ -27,12 +27,14 @@
   <div class="page-head"><h1>Get in touch</h1></div>
   <section>
     <div class="wrap">
-      <p class="lede">Questions or a booking — send a note. Replace the email below with her real address before the site goes live.</p>
-      <form class="secure-form" action="mailto:enquiries@palmerspetcare.co.uk" method="post" enctype="text/plain">
+      <p class="lede">Questions or a booking? Send a note and I’ll get back to you.</p>
+      <form class="secure-form" data-enquiry data-page="contact" novalidate>
         <label for="name">Your name</label>
         <input id="name" name="name" required>
-        <label for="phone">Phone</label>
-        <input id="phone" name="phone" type="tel">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+        <label for="phone">Phone <span class="optional">(optional)</span></label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel">
         <label for="service">Service</label>
         <select id="service" name="service">
           <option>Dog walking</option>
@@ -41,18 +43,16 @@
           <option>Not sure yet</option>
         </select>
         <label for="message">About your pet</label>
-        <textarea id="message" name="message" placeholder="Name, breed, rough street, days you need."></textarea>
+        <textarea id="message" name="message" required placeholder="Name, breed, rough street, days you need."></textarea>
         <div class="captcha-box">
           <p class="captcha-label">Please confirm you’re human</p>
-          <!-- Replace the placeholder with the production Turnstile site key. The token must be verified server-side before accepting submissions. -->
-          <div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light" data-callback="palmersEnquiryReady"></div>
-          <p class="form-note">CAPTCHA protection will be active once the site key and server verification endpoint are connected.</p>
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light"></div>
         </div>
-        <button class="btn" type="submit" id="enquiry-send" disabled>Send</button>
+        <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+        <button class="btn" type="submit">Send</button>
+        <p class="form-status" role="status" aria-live="polite"></p>
       </form>
-      <script>
-        function palmersEnquiryReady() { var b = document.getElementById('enquiry-send'); if (b) b.disabled = false; }
-      </script>
+      <script src="enquiry.js" defer></script>
     </div>
   </section>
   <footer><div class="wrap foot"><p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p><p>Facebook: Palmer’s Pet Care Selsey</p></div></footer>

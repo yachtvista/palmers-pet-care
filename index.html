@@ -162,8 +162,8 @@
   <section class="panel" id="contact">
     <div class="wrap">
       <h2 class="sec">Enquire</h2>
-      <p class="lede">Tell me about your pet and the days you need. Change the email on this form before the site goes live.</p>
-      <form action="mailto:enquiries@palmerspetcare.co.uk" method="post" enctype="text/plain">
+      <p class="lede">Tell me about your pet and the days you need, and I’ll get back to you.</p>
+      <form data-enquiry data-page="home" novalidate>
         <label for="service">Service</label>
         <select id="service" name="service">
           <option>Dog walking</option>
@@ -173,17 +173,18 @@
         </select>
         <label for="name">Your name</label>
         <input id="name" name="name" required>
-        <label for="phone">Phone</label>
-        <input id="phone" name="phone" type="tel">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+        <label for="phone">Phone <span class="optional">(optional)</span></label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel">
         <label for="message">About your pet</label>
-        <textarea id="message" name="message" placeholder="Name, breed, East Street / Seal Bay / other, days you need."></textarea>
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light" data-callback="palmersEnquiryReady"></div>
-        <button class="btn navy" type="submit" id="enquiry-send" disabled>Send enquiry</button>
+        <textarea id="message" name="message" required placeholder="Name, breed, East Street / Seal Bay / other, days you need."></textarea>
+        <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light"></div>
+        <button class="btn navy" type="submit">Send enquiry</button>
+        <p class="form-status" role="status" aria-live="polite"></p>
       </form>
-      <script>
-        // The Send button stays off until Cloudflare Turnstile has checked the visitor.
-        function palmersEnquiryReady() { var b = document.getElementById('enquiry-send'); if (b) b.disabled = false; }
-      </script>
+      <script src="enquiry.js" defer></script>
     </div>
   </section>
 
