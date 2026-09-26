@@ -60,7 +60,7 @@
       let token = tokenNow();
       if (!token && hasWidget()) { say('Just checking you’re human…'); token = await waitForToken(20000); }
       if (!token && hasWidget()) {
-        say('The security check has not finished. Please reload the page and try again, or email ' + EMAIL + '.', 'error');
+        say('Please tick “Verify you are human” above, then press Send. If the box will not load, email ' + EMAIL + '.', 'error');
         btn.disabled = false; return;
       }
       say('Sending…'); btn.textContent = 'Sending…';
