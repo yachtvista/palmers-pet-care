@@ -76,8 +76,10 @@
             <label for="pf-name">Pet’s name<input id="pf-name" name="name" required maxlength="80" autocomplete="off"></label>
             <div class="pp-two-fields">
               <label for="pf-species">Species<select id="pf-species" name="species" required></select></label>
-              <label for="pf-age">Age<select id="pf-age" name="age" required></select></label>
+              <label for="pf-dob">Date of birth<input id="pf-dob" name="dateOfBirth" type="date"></label>
             </div>
+            <label for="pf-age">Age <span class="pp-label-hint">(only if you don’t know the date of birth)</span><input id="pf-age" name="age" maxlength="40" placeholder="e.g. About 7"></label>
+            <p class="pp-hint" data-age-hint hidden></p>
             <label for="pf-breed">Breed<input id="pf-breed" name="breed" maxlength="60" placeholder="e.g. Domestic shorthair"></label>
             <label for="pf-diet">Feeding routine<textarea id="pf-diet" name="diet" rows="2" maxlength="1000" placeholder="e.g. Wet food, twice daily"></textarea></label>
             <label for="pf-notes">Personality &amp; care notes<textarea id="pf-notes" name="notes" rows="3" maxlength="1000" placeholder="Temperament, quirks, anything we should know…"></textarea></label>

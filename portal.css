@@ -4,6 +4,10 @@
 .pp-side { background: var(--navy); color: #fff; padding: 1.4rem 1.1rem; display: flex; flex-direction: column; gap: 1.2rem; }
 .pp-side .brand { color: #fff; }
 .pp-side .brand strong, .pp-side .brand small { color: #fff; }
+.pp-side .brand { flex-direction: column; text-align: center; gap: .65rem; }
+.pp-side .brand img { width: 128px; height: 128px; }
+.pp-side .brand strong { font-size: 1.1rem; }
+@media (max-width: 760px) { .pp-side .brand img { width: 88px; height: 88px; } }
 .pp-side nav a, .pp-side nav button { display: block; width: 100%; text-align: left; padding: .6rem .75rem; margin: .15rem 0; border: 0; border-radius: 9px; background: transparent; color: #dfe4f7; font: inherit; font-size: .95rem; text-decoration: none; cursor: pointer; }
 .pp-side nav a:hover, .pp-side nav button:hover { background: rgba(255,255,255,.08); color: #fff; }
 .pp-side nav a[aria-current="page"] { background: var(--pp-purple); color: #fff; }
@@ -256,3 +260,14 @@ img.pp-avatar { object-fit: cover; }
 .pp-emergency dd { margin: .1rem 0 0; color: var(--ink); font-weight: 600; }
 .pp-emergency dd small { display: block; font-weight: 500; color: #5b6570; }
 @media (max-width: 640px) { .pp-two-fields-ext { grid-template-columns: 1fr; } }
+
+/* Pet card: the customer already knows the details, so list the fields with a tick or a dash. */
+.pp-label-hint { font-weight: 400; color: #5b6570; text-transform: none; letter-spacing: 0; font-size: .82rem; }
+.pp-profile-age { margin: 0 0 1rem; color: #33456a; font-size: 1.05rem; }
+.pp-checklist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .1rem 1.6rem; margin: 0 0 1.1rem; padding-top: .9rem; border-top: 1px solid #d4cbf0; }
+.pp-checklist div { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; padding: .32rem 0; border-bottom: 1px solid rgba(212, 203, 240, .55); }
+.pp-checklist dt { color: #5b6570; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.pp-checklist dd { margin: 0; font-size: 1rem; line-height: 1; flex: none; }
+.pp-checklist .yes { color: #1f7a45; font-weight: 700; }
+.pp-checklist .no { color: #6b7385; }
+@media (max-width: 640px) { .pp-checklist { grid-template-columns: 1fr; } }
