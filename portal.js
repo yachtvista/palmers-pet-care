@@ -23,6 +23,12 @@
     return turnstileToken(form);
   }
   const securityCheckFailed = 'Please tick “Verify you are human” above, then try again. If the box will not load, email enquiries@palmerspetcare.co.uk.';
+  const widgetBlocked = 'The “Verify you are human” box could not load — an ad blocker, VPN or the 1.1.1.1 app can stop it. Please turn those off for this page, or email enquiries@palmerspetcare.co.uk.';
+  // Warn early if the widget never appears, rather than after someone presses the button.
+  function watchTurnstile(form) {
+    const w = form.querySelector('.cf-turnstile'); if (!w) return;
+    setTimeout(() => { const s = $('.form-status', form); if (!turnstileToken(form) && !w.querySelector('iframe') && s && !s.textContent) status(form, widgetBlocked, 'error'); }, 9000);
+  }
   function status(form, text, kind) { const s = $('.form-status', form); if (s) { s.textContent = text; s.className = 'form-status' + (kind ? ' ' + kind : ''); } }
   function fillSelects(form) {
     const species = ['Dog', 'Cat', 'Rabbit', 'Guinea pig', 'Hamster', 'Bird', 'Reptile', 'Other'];
@@ -55,7 +61,7 @@
   // ----- Register your pet -----
   const reg = $('[data-account-form="registration"]');
   if (reg) {
-    fillSelects(reg);
+    fillSelects(reg); watchTurnstile(reg);
     reg.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (reg.password.value !== reg.confirm.value) return status(reg, 'Those passwords do not match.', 'error');
@@ -78,6 +84,7 @@
   // ----- Sign in -----
   const login = $('[data-account-form="login"]');
   if (login) {
+    watchTurnstile(login);
     login.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = $('button[type="submit"]', login); btn.disabled = true;
