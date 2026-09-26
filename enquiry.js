@@ -41,6 +41,15 @@
       return tokenNow();
     }
 
+    // If the widget never loads (ad blocker, VPN, the 1.1.1.1/WARP app, or a Cloudflare wobble),
+    // say so early and offer the email address rather than leaving a dead Send button.
+    const widget = form.querySelector('.cf-turnstile');
+    if (widget) setTimeout(() => {
+      if (!tokenNow() && !widget.querySelector('iframe') && status && !status.textContent) {
+        say('The “Verify you are human” box could not load — an ad blocker, VPN or the 1.1.1.1 app can stop it. Please turn those off for this page, or email ' + EMAIL + ' and I will pick it up there.', 'error');
+      }
+    }, 9000);
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       clearFieldErrors();
