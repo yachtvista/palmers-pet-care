@@ -13,6 +13,16 @@
     return body;
   }
   const turnstileToken = (form) => { const i = form.querySelector('input[name="cf-turnstile-response"]'); return i ? i.value : ''; };
+  const hasTurnstile = (form) => !!form.querySelector('.cf-turnstile');
+  // The widget solves asynchronously. Submitting before it finishes used to send an empty token,
+  // which the server rejects now that verification is switched on — so wait for it.
+  async function turnstileReady(form, ms = 20000) {
+    if (!hasTurnstile(form)) return '';
+    const until = Date.now() + ms;
+    while (Date.now() < until) { const t = turnstileToken(form); if (t) return t; await new Promise((r) => setTimeout(r, 250)); }
+    return turnstileToken(form);
+  }
+  const securityCheckFailed = 'The security check has not finished. Please reload the page and try again, or email enquiries@palmerspetcare.co.uk.';
   function status(form, text, kind) { const s = $('.form-status', form); if (s) { s.textContent = text; s.className = 'form-status' + (kind ? ' ' + kind : ''); } }
   function fillSelects(form) {
     const species = ['Dog', 'Cat', 'Rabbit', 'Guinea pig', 'Hamster', 'Bird', 'Reptile', 'Other'];
@@ -49,13 +59,16 @@
     reg.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (reg.password.value !== reg.confirm.value) return status(reg, 'Those passwords do not match.', 'error');
-      status(reg, 'Registering…');
       const btn = $('button[type="submit"]', reg); btn.disabled = true;
+      let token = turnstileToken(reg);
+      if (!token && hasTurnstile(reg)) { status(reg, 'Just checking you’re human…'); token = await turnstileReady(reg); }
+      if (!token && hasTurnstile(reg)) { status(reg, securityCheckFailed, 'error'); btn.disabled = false; return; }
+      status(reg, 'Registering…');
       try {
         await api('/register', { method: 'POST', body: {
           name: reg.name.value, email: reg.email.value, phone: reg.phone ? reg.phone.value : '', password: reg.password.value,
           pet: { name: reg.petName.value, species: reg.species.value, age: reg.age.value, notes: reg.notes ? reg.notes.value : '' },
-          turnstile: turnstileToken(reg),
+          turnstile: token,
         } });
         location.href = 'account.html';
       } catch (err) { status(reg, err.message, 'error'); btn.disabled = false; if (window.turnstile) try { window.turnstile.reset(); } catch (x) { /* no widget */ } }
@@ -67,10 +80,13 @@
   if (login) {
     login.addEventListener('submit', async (e) => {
       e.preventDefault();
-      status(login, 'Signing in…');
       const btn = $('button[type="submit"]', login); btn.disabled = true;
+      let token = turnstileToken(login);
+      if (!token && hasTurnstile(login)) { status(login, 'Just checking you’re human…'); token = await turnstileReady(login); }
+      if (!token && hasTurnstile(login)) { status(login, securityCheckFailed, 'error'); btn.disabled = false; return; }
+      status(login, 'Signing in…');
       try {
-        const r = await api('/login', { method: 'POST', body: { email: login.email.value, password: login.password.value, turnstile: turnstileToken(login) } });
+        const r = await api('/login', { method: 'POST', body: { email: login.email.value, password: login.password.value, turnstile: token } });
         location.href = r.isAdmin ? 'admin.html' : 'account.html';
       } catch (err) { status(login, err.message, 'error'); btn.disabled = false; if (window.turnstile) try { window.turnstile.reset(); } catch (x) { /* no widget */ } }
     });

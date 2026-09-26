@@ -317,6 +317,12 @@ footer a { color: var(--beige); text-decoration: none; }
 .check-label input { width: auto; }
 .form-status { min-height: 1.4rem; margin-top: .8rem; color: var(--accent); font-size: .86rem; }
 .form-status.error { color: #a13b3b; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+label .optional { color: var(--muted); font-weight: 400; }
+.enquiry-sent { max-width: 36rem; margin: 0 auto; padding: 1.4rem 1.5rem; background: var(--cream); border-left: 4px solid var(--beige); color: var(--navy); }
+.enquiry-sent strong { display: block; font-size: 1.1rem; margin-bottom: .25rem; }
+.field-error { margin: .25rem 0 .2rem; color: #a13b3b; font-size: .82rem; }
+[aria-invalid="true"] { border-color: #a13b3b; }
 .captcha-box { margin: .7rem 0 .25rem; padding: .9rem; background: var(--cream); border: 1px solid var(--line); }
 .captcha-label { margin-bottom: .5rem; color: var(--navy); font-size: .84rem; font-weight: 600; }
 .form-note { color: var(--muted); font-size: .76rem; line-height: 1.45; }
