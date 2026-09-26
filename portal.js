@@ -33,7 +33,7 @@
   function fillSelects(form) {
     const species = ['Dog', 'Cat', 'Rabbit', 'Guinea pig', 'Hamster', 'Bird', 'Reptile', 'Other'];
     const ages = ['Under 1 year', '1–2 years', '3–5 years', '6–8 years', '9–12 years', '13 years or older'];
-    const fill = (sel, list, placeholder) => { if (!sel) return; sel.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>' + list.map((v) => '<option>' + esc(v) + '</option>').join(''); };
+    const fill = (sel, list, placeholder) => { if (!sel || sel.tagName !== 'SELECT') return; sel.innerHTML = '<option value="" disabled selected>' + placeholder + '</option>' + list.map((v) => '<option>' + esc(v) + '</option>').join(''); };
     fill($('[name="species"]', form), species, 'Choose…');
     fill($('[name="age"]', form), ages, 'Choose…');
     const freq = $('[name="medicationFrequency"]', form);
@@ -53,6 +53,21 @@
     if (!res.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
     return j;
   }
+  // A pet's age, worked out from the date of birth when there is one, otherwise the typed age.
+  const todayISO = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  function ageFromDob(dob) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob || ''); if (!m) return '';
+    const t = /^(\d{4})-(\d{2})-(\d{2})$/.exec(todayISO()); if (!t) return '';
+    let months = (+t[1] - +m[1]) * 12 + (+t[2] - +m[2]);
+    if (+t[3] < +m[3]) months -= 1;
+    if (months < 0) return '';
+    const y = Math.floor(months / 12), mo = months % 12;
+    const yr = y ? y + (y === 1 ? ' year' : ' years') : '';
+    const mn = mo ? mo + (mo === 1 ? ' month' : ' months') : '';
+    return (yr && mn) ? yr + ' ' + mn : (yr || mn || 'Under a month old');
+  }
+  const petAge = (p) => ageFromDob(p.dateOfBirth) || p.age || '';
+
   const careRows = (p) => {
     const rows = [['Breed', p.breed], ['Dietary requirements', p.diet], ['Medication', medicationText(p)], ['Likes', p.likes], ['Dislikes', p.dislikes]].filter((r) => r[1]);
     return rows.length ? `<dl class="pp-care">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : '';
@@ -106,7 +121,7 @@
   const petCard = (p, editable) => `
     <article class="pp-card pp-pet" data-pet="${esc(p.id)}">
       <div class="pp-card-head"><span class="pp-avatar" aria-hidden="true">${esc((p.name || '?').slice(0, 1).toUpperCase())}</span>
-        <div><h3>${esc(p.name)}</h3><p class="pp-sub">${esc(p.species)} · ${esc(p.age)}</p></div></div>
+        <div><h3>${esc(p.name)}</h3><p class="pp-sub">${esc(p.species)} · ${esc(petAge(p) || 'age not given')}</p></div></div>
       ${p.notes ? `<p class="pp-notes">${esc(p.notes)}</p>` : ''}
       ${careRows(p)}
       <dl class="pp-facts"><div><dt>Registered</dt><dd>${when(p.createdAt)}</dd></div><div><dt>Updated</dt><dd>${when(p.updatedAt)}</dd></div></dl>
@@ -206,6 +221,11 @@
           <span class="pp-chip-text"><strong>${esc(p.name)}</strong><span>${esc(p.species)}</span></span>${chevron}
         </button>`; };
       const value = (v) => v ? `<p class="pp-value">${esc(v)}</p>` : '<p class="pp-value is-empty">—</p>';
+      // The customer knows their own pet, so the card lists which details we hold, not the details.
+      const checklist = (p) => [
+        ['Breed', p.breed], ['Feeding routine', p.diet], ['Personality & care notes', p.notes],
+        ['Medication', medicationText(p)], ['Likes', p.likes], ['Dislikes', p.dislikes],
+      ].map(([label, v]) => `<div><dt>${esc(label)}</dt><dd>${v ? '<span class="yes" role="img" aria-label="Added">✓</span>' : '<span class="no" role="img" aria-label="Not added yet">—</span>'}</dd></div>`).join('');
       const profile = (p) => { const h = heroPhoto(p); return `
         <div class="pp-profile" id="profile-panel" role="tabpanel" aria-labelledby="chip-${esc(p.id)}">
           <div class="pp-photo-block">
@@ -219,19 +239,8 @@
           <div>
             <p class="pp-kicker">Pet profile</p>
             <h3>${esc(p.name)}</h3>
-            <p class="pp-profile-meta">${esc(p.species)} · ${esc(p.age)}</p>
-            <div class="pp-two">
-              <div><p class="pp-label">Breed</p>${value(p.breed)}</div>
-              <div><p class="pp-label">Feeding routine</p>${value(p.diet)}</div>
-            </div>
-            <p class="pp-label">Personality &amp; care notes</p>
-            ${p.notes ? `<p class="pp-profile-notes">${esc(p.notes)}</p>` : '<p class="pp-profile-notes pp-value is-empty">—</p>'}
-            <p class="pp-label pp-care-head">More care details</p>
-            <div class="pp-care-row"><p class="pp-label">Medication</p>${value(medicationText(p))}</div>
-            <div class="pp-two">
-              <div><p class="pp-label">Likes</p>${value(p.likes)}</div>
-              <div><p class="pp-label">Dislikes</p>${value(p.dislikes)}</div>
-            </div>
+            <p class="pp-profile-age">${petAge(p) ? esc(petAge(p)) : '<span class="is-empty">Age not added yet</span>'}</p>
+            <dl class="pp-checklist">${checklist(p)}</dl>
             <div class="pp-profile-actions">
               <button type="button" class="pp-primary" data-edit-pet="${esc(p.id)}">${pencil}Edit ${esc(possessive(p.name))} details</button>
               <button type="button" class="pp-textlink" data-remove-pet="${esc(p.id)}">Remove pet</button>
@@ -284,20 +293,33 @@
 
       // Pet add / edit
       const petForm = $('[data-pet-form]', account); fillSelects(petForm);
+      // Show the worked-out age beside the date of birth as it is typed, and grey the age box out.
+      const ageHint = $('[data-age-hint]', account);
+      function syncAge() {
+        const a = ageFromDob(petForm.dateOfBirth.value);
+        petForm.age.disabled = !!petForm.dateOfBirth.value;
+        if (a) { ageHint.textContent = 'That makes ' + a + ' today, and it will keep itself up to date.'; ageHint.hidden = false; }
+        else if (petForm.dateOfBirth.value) { ageHint.textContent = 'That date does not look right.'; ageHint.hidden = false; }
+        else { ageHint.hidden = true; }
+      }
+      petForm.dateOfBirth.addEventListener('input', syncAge);
       function openPetModal(p, from) {
         petForm.reset(); petForm.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
         petForm.dataset.petId = p ? p.id : '';
         $('[data-pet-modal-title]', account).textContent = p ? `Edit ${possessive(p.name)} details` : 'Add a pet';
         $('[data-submit]', petForm).textContent = p ? 'Save changes' : 'Add pet';
+        petForm.dateOfBirth.value = p ? (p.dateOfBirth || '') : '';
         if (p) { petForm.name.value = p.name; petForm.species.value = p.species; petForm.age.value = p.age; petForm.breed.value = p.breed || ''; petForm.diet.value = p.diet || ''; petForm.notes.value = p.notes || ''; petForm.medication.value = p.medication || ''; petForm.medicationFrequency.value = p.medicationFrequency || ''; petForm.likes.value = p.likes || ''; petForm.dislikes.value = p.dislikes || ''; }
         $('.pp-more', petForm).open = !!(p && (p.medication || p.likes || p.dislikes));
+        syncAge();
         openDialog('pet', from); petForm.name.focus();
       }
       petForm.addEventListener('submit', async (e) => {
         e.preventDefault(); if (!validate(petForm)) return;
-        petForm.medication.removeAttribute('aria-invalid');
+        petForm.medication.removeAttribute('aria-invalid'); petForm.age.removeAttribute('aria-invalid');
+        if (!petForm.dateOfBirth.value && !petForm.age.value.trim()) { petForm.age.setAttribute('aria-invalid', 'true'); petForm.age.focus(); fail(petForm, 'Please give your pet’s age, or their date of birth.'); return; }
         if (petForm.medicationFrequency.value && !petForm.medication.value.trim()) { $('.pp-more', petForm).open = true; petForm.medication.setAttribute('aria-invalid', 'true'); petForm.medication.focus(); fail(petForm, 'Please enter the medication name, or set how often to “Not on medication”.'); return; }
-        const body = { name: petForm.name.value, species: petForm.species.value, age: petForm.age.value, breed: petForm.breed.value, notes: petForm.notes.value, diet: petForm.diet.value, medication: petForm.medication.value, medicationFrequency: petForm.medicationFrequency.value, likes: petForm.likes.value, dislikes: petForm.dislikes.value };
+        const body = { name: petForm.name.value, species: petForm.species.value, age: petForm.dateOfBirth.value ? '' : petForm.age.value, dateOfBirth: petForm.dateOfBirth.value, breed: petForm.breed.value, notes: petForm.notes.value, diet: petForm.diet.value, medication: petForm.medication.value, medicationFrequency: petForm.medicationFrequency.value, likes: petForm.likes.value, dislikes: petForm.dislikes.value };
         busy(petForm, true); fail(petForm, '');
         try {
           const id = petForm.dataset.petId;
@@ -398,7 +420,7 @@
         const x = extras.get(p.id);
         return `
         <article class="pp-card pp-pet" data-pet="${esc(p.id)}">
-          <div class="pp-card-head">${p.profilePhotoUrl ? `<img class="pp-avatar" src="${imgUrl(p.profilePhotoUrl)}" alt="">` : `<span class="pp-avatar" aria-hidden="true">${esc((p.name || '?').slice(0, 1).toUpperCase())}</span>`}<div><h3>${esc(p.name)}</h3><p class="pp-sub">${esc(p.species)} · ${esc(p.age)}</p></div></div>
+          <div class="pp-card-head">${p.profilePhotoUrl ? `<img class="pp-avatar" src="${imgUrl(p.profilePhotoUrl)}" alt="">` : `<span class="pp-avatar" aria-hidden="true">${esc((p.name || '?').slice(0, 1).toUpperCase())}</span>`}<div><h3>${esc(p.name)}</h3><p class="pp-sub">${esc(p.species)} · ${esc(petAge(p) || 'age not given')}</p></div></div>
           ${p.notes ? `<p class="pp-notes">${esc(p.notes)}</p>` : ''}
           ${careRows(p)}
           <div class="pp-tools">
