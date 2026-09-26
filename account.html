@@ -43,7 +43,7 @@
 
           <aside class="pp-about" aria-labelledby="about-heading">
             <div class="pp-about-head">
-              <span class="pp-owner-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <span class="pp-owner-avatar" data-owner-avatar><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
               <div>
                 <p class="pp-kicker">About you · Owner</p>
                 <h2 id="about-heading" data-owner-fullname>…</h2>
@@ -51,11 +51,7 @@
               </div>
             </div>
             <hr class="pp-rule">
-            <dl class="pp-details">
-              <div><dt>Email address</dt><dd data-owner-email>…</dd></div>
-              <div><dt>Mobile number</dt><dd data-owner-phone>…</dd></div>
-              <div><dt>Home address</dt><dd data-owner-address>…</dd></div>
-            </dl>
+            <dl class="pp-details" data-owner-details></dl>
             <button type="button" class="pp-primary" data-edit-owner><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Edit your details</button>
           </aside>
         </div>
@@ -82,7 +78,7 @@
               <label for="pf-species">Species<select id="pf-species" name="species" required></select></label>
               <label for="pf-age">Age<select id="pf-age" name="age" required></select></label>
             </div>
-            <label for="pf-breed" data-field="breed" hidden>Breed<input id="pf-breed" name="breed" maxlength="80"></label>
+            <label for="pf-breed">Breed<input id="pf-breed" name="breed" maxlength="60" placeholder="e.g. Domestic shorthair"></label>
             <label for="pf-diet">Feeding routine<textarea id="pf-diet" name="diet" rows="2" maxlength="1000" placeholder="e.g. Wet food, twice daily"></textarea></label>
             <label for="pf-notes">Personality &amp; care notes<textarea id="pf-notes" name="notes" rows="3" maxlength="1000" placeholder="Temperament, quirks, anything we should know…"></textarea></label>
             <details class="pp-more">
@@ -103,11 +99,36 @@
         <form method="dialog" class="pp-form" novalidate data-owner-form>
           <div class="pp-modal-head"><h2 id="owner-modal-title">Edit your details</h2><button type="button" class="pp-close" data-close aria-label="Close">×</button></div>
           <div class="pp-fields">
+            <h3 class="pp-form-heading">Your details</h3>
             <label for="of-name">Full name<input id="of-name" name="name" required maxlength="120" autocomplete="name"></label>
             <label for="of-email">Email address<input id="of-email" name="email" type="email" disabled></label>
             <p class="pp-hint">To change your email address, please <a href="contact.html">contact us</a>.</p>
             <label for="of-phone">Mobile number<input id="of-phone" name="phone" type="tel" maxlength="40" autocomplete="tel"></label>
-            <label for="of-address" data-field="address" hidden>Home address<textarea id="of-address" name="address" rows="3" maxlength="300" autocomplete="street-address"></textarea></label>
+            <label class="pp-check" for="of-whatsapp"><input id="of-whatsapp" name="whatsapp" type="checkbox">This number is on WhatsApp</label>
+            <div class="pp-two-fields pp-two-fields-ext">
+              <label for="of-work">Work number<input id="of-work" name="workPhone" type="tel" maxlength="40" autocomplete="tel-national"></label>
+              <label for="of-ext">Extension<input id="of-ext" name="workExt" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" placeholder="e.g. 204"></label>
+            </div>
+            <label for="of-address">Home address<textarea id="of-address" name="address" rows="3" maxlength="300" autocomplete="street-address" placeholder="House, street, town and postcode"></textarea></label>
+
+            <h3 class="pp-form-heading">Photo</h3>
+            <div class="pp-photo-field">
+              <span class="pp-owner-avatar pp-owner-avatar-sm" data-owner-photo-preview><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <div class="pp-photo-tools">
+                <label class="pp-photo-change"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span data-owner-upload-label>Upload a photo</span><input type="file" accept="image/*,.heic,.heif" data-owner-upload hidden></label>
+                <button type="button" class="pp-textlink pp-photo-remove" data-owner-photo-remove hidden>Remove photo</button>
+                <p class="pp-photo-status" role="status" aria-live="polite" data-owner-photo-status></p>
+              </div>
+            </div>
+            <p class="pp-hint">JPEG, PNG, WebP or HEIC, up to 10 MB. We resize it and remove any location data before saving.</p>
+
+            <h3 class="pp-form-heading">Emergency contact</h3>
+            <label for="of-em-name">Name<input id="of-em-name" name="emergencyName" maxlength="120" autocomplete="off"></label>
+            <div class="pp-two-fields">
+              <label for="of-em-rel">Relationship<input id="of-em-rel" name="emergencyRelationship" maxlength="60" placeholder="e.g. Sister"></label>
+              <label for="of-em-phone">Phone<input id="of-em-phone" name="emergencyPhone" type="tel" maxlength="40"></label>
+            </div>
+            <p class="pp-hint">Someone we can call if we can’t reach you. Please check they’re happy to be listed.</p>
           </div>
           <p class="pp-form-error" role="alert" data-error></p>
           <div class="pp-modal-actions"><button type="button" class="pp-secondary" data-close>Cancel</button><button type="submit" class="pp-primary" data-submit>Save</button></div>

@@ -232,3 +232,27 @@ img.pp-avatar { object-fit: cover; }
   .pp-two-fields { grid-template-columns: 1fr; }
   .pp-lightbox-close { top: 8px; right: 8px; }
 }
+
+/* ===== Owner details + care details (additive rows/fields in the same style) ===== */
+.pp-owner-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.pp-owner-avatar-sm { width: 56px; height: 56px; }
+.pp-owner-avatar-sm svg { width: 30px; height: 30px; }
+.pp-details dd .pp-line2 { display: block; color: #33456a; font-size: .95rem; margin-top: .1rem; }
+.pp-pill-wa { display: inline-block; margin-left: .5rem; padding: .1rem .5rem; border-radius: 999px; background: #e3f5e9; color: #1f7a45; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: middle; }
+.pp-care-head { margin: 1rem 0 .5rem; padding-top: .8rem; border-top: 1px solid #d4cbf0; }
+.pp-care-row { margin: 0 0 .8rem; }
+.pp-form-heading { margin: .4rem 0 0; font-family: "Manrope", "Segoe UI", sans-serif; color: #33456a; font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.pp-form-heading:first-child { margin-top: 0; }
+.pp-check { display: flex !important; flex-direction: row; align-items: center; gap: .5rem; font-weight: 500 !important; color: var(--ink) !important; margin-top: -.3rem; }
+.pp-check input { width: 1.05rem; height: 1.05rem; margin: 0; accent-color: var(--pp-purple); }
+.pp-two-fields-ext { grid-template-columns: 2fr 1fr; }
+.pp-photo-field { display: flex; align-items: center; gap: 1rem; }
+.pp-photo-field .pp-photo-tools { flex-direction: column; align-items: flex-start; gap: .3rem; }
+/* Admin read-only rows (no restructure: same .pp-facts / .pp-care lists, one emphasised row) */
+.pp-owner .pp-owner-head { display: flex; align-items: center; gap: .8rem; }
+.pp-owner .pp-owner-head img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: none; }
+.pp-emergency { margin: .7rem 0 0; padding: .6rem .8rem; border-radius: 10px; background: #fff4e5; border-left: 4px solid #e0862a; }
+.pp-emergency dt { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: #8a4b0f; font-weight: 700; }
+.pp-emergency dd { margin: .1rem 0 0; color: var(--ink); font-weight: 600; }
+.pp-emergency dd small { display: block; font-weight: 500; color: #5b6570; }
+@media (max-width: 640px) { .pp-two-fields-ext { grid-template-columns: 1fr; } }

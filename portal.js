@@ -23,8 +23,22 @@
     const freq = $('[name="medicationFrequency"]', form);
     if (freq) freq.innerHTML = ['Once a day', 'Twice a day', 'Three times a day', 'Every other day', 'Weekly', 'As needed'].reduce((h, v) => h + '<option>' + esc(v) + '</option>', '<option value="">Not on medication</option>');
   }
+  const medicationText = (p) => (p.medication ? p.medication + (p.medicationFrequency ? ' · ' + p.medicationFrequency : '') : (p.medicationFrequency || ''));
+  const workText = (o) => (o.workPhone ? o.workPhone + (o.workExt ? ' · ext. ' + o.workExt : '') : '');
+  const emergencyLine = (o) => [o.emergencyName, o.emergencyRelationship].filter(Boolean).join(' · ');
+  // Raw upload: the server sniffs the real type, resizes and strips metadata. HEIC is converted in the
+  // browser first where the device can decode it (iPhone/Safari); elsewhere the server explains.
+  async function uploadPhoto(path, file) {
+    if (file.size > 10 * 1024 * 1024) throw new Error('That photo is over 10 MB. Please choose a smaller one.');
+    let body = file;
+    if (/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name)) { try { body = await (await fetch(await shrink(file, 1600))).blob(); } catch (e) { body = file; } }
+    const res = await fetch(API + path, { method: 'POST', credentials: 'include', headers: { 'Content-Type': body.type || 'application/octet-stream' }, body });
+    let j = null; try { j = await res.json(); } catch (e) { /* no body */ }
+    if (!res.ok) throw new Error((j && j.error) || 'Something went wrong. Please try again.');
+    return j;
+  }
   const careRows = (p) => {
-    const rows = [['Dietary requirements', p.diet], ['Medication', p.medication ? p.medication + (p.medicationFrequency ? ' · ' + p.medicationFrequency : '') : ''], ['Likes', p.likes], ['Dislikes', p.dislikes]].filter((r) => r[1]);
+    const rows = [['Breed', p.breed], ['Dietary requirements', p.diet], ['Medication', medicationText(p)], ['Likes', p.likes], ['Dislikes', p.dislikes]].filter((r) => r[1]);
     return rows.length ? `<dl class="pp-care">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : '';
   };
 
@@ -75,10 +89,13 @@
       <dl class="pp-facts"><div><dt>Registered</dt><dd>${when(p.createdAt)}</dd></div><div><dt>Updated</dt><dd>${when(p.updatedAt)}</dd></div></dl>
       ${editable ? `<button class="pp-btn ghost" type="button" data-edit-pet="${esc(p.id)}">Edit details</button>` : ''}
     </article>`;
+  const telHref = (v) => 'tel:' + esc(String(v).replace(/[^\d+]/g, ''));
   const ownerCard = (o) => `
     <article class="pp-card pp-owner">
-      <p class="pp-eyebrow">Owner</p><h3>${esc(o.name)}</h3>
-      <dl class="pp-facts"><div><dt>Email</dt><dd><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></dd></div>${o.phone ? `<div><dt>Phone</dt><dd><a href="tel:${esc(String(o.phone).replace(/[^\d+]/g, ''))}">${esc(o.phone)}</a></dd></div>` : ''}<div><dt>Member since</dt><dd>${when(o.memberSince)}</dd></div>${o.lastLoginAt ? `<div><dt>Last sign-in</dt><dd>${when(o.lastLoginAt)}</dd></div>` : ''}</dl>
+      <p class="pp-eyebrow">Owner</p>
+      <div class="pp-owner-head">${o.photoUrl ? `<img src="${imgUrl(o.photoUrl)}" alt="">` : ''}<h3>${esc(o.name)}</h3></div>
+      <dl class="pp-facts"><div><dt>Email</dt><dd><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></dd></div>${o.phone ? `<div><dt>Mobile</dt><dd><a href="${telHref(o.phone)}">${esc(o.phone)}</a>${o.whatsapp ? '<span class="pp-pill-wa">WhatsApp</span>' : ''}</dd></div>` : ''}${o.workPhone ? `<div><dt>Work number</dt><dd><a href="${telHref(o.workPhone)}">${esc(o.workPhone)}</a>${o.workExt ? ' · ext. ' + esc(o.workExt) : ''}</dd></div>` : ''}${o.address ? `<div><dt>Home address</dt><dd>${esc(o.address)}</dd></div>` : ''}<div><dt>Member since</dt><dd>${when(o.memberSince)}</dd></div>${o.lastLoginAt ? `<div><dt>Last sign-in</dt><dd>${when(o.lastLoginAt)}</dd></div>` : ''}</dl>
+      ${(o.emergencyName || o.emergencyPhone || o.emergencyRelationship) ? `<dl class="pp-emergency"><dt>Emergency contact</dt><dd>${esc(emergencyLine(o) || '—')}${o.emergencyPhone ? `<small><a href="${telHref(o.emergencyPhone)}">${esc(o.emergencyPhone)}</a></small>` : ''}</dd></dl>` : ''}
     </article>`;
 
   // ----- Photos and the diary (shared) -----
@@ -140,10 +157,20 @@
       // --- owner ---
       const setText = (sel, v) => { const el = $(sel, account); if (el) el.textContent = v; };
       const setValue = (sel, v, empty) => { const el = $(sel, account); if (!el) return; el.textContent = v || empty; el.classList.toggle('is-empty', !v); };
+      const personIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+      const avatarHtml = (o) => (o.photoUrl ? `<img src="${imgUrl(o.photoUrl)}?v=${esc(o.photoId)}" alt="${esc(o.name)}">` : personIcon);
+      const dash = (v) => (v ? esc(v) : '<span class="is-empty">—</span>');
       function renderOwner() {
         const o = d.owner;
         setText('[data-owner-first]', firstName(o)); setText('[data-owner-fullname]', o.name);
-        setValue('[data-owner-email]', o.email, '—'); setValue('[data-owner-phone]', o.phone, 'Not added yet'); setValue('[data-owner-address]', o.address, 'Not added yet');
+        $('[data-owner-avatar]', account).innerHTML = avatarHtml(o);
+        const em = emergencyLine(o);
+        $('[data-owner-details]', account).innerHTML = `
+          <div><dt>Email address</dt><dd>${dash(o.email)}</dd></div>
+          <div><dt>Mobile number</dt><dd>${dash(o.phone)}${o.phone && o.whatsapp ? '<span class="pp-pill-wa">WhatsApp</span>' : ''}</dd></div>
+          <div><dt>Work number</dt><dd>${dash(workText(o))}</dd></div>
+          <div><dt>Home address</dt><dd>${dash(o.address)}</dd></div>
+          <div><dt>Emergency contact</dt><dd>${em || o.emergencyPhone ? `${em ? esc(em) : ''}${o.emergencyPhone ? `<span class="pp-line2">${esc(o.emergencyPhone)}</span>` : ''}` : '<span class="is-empty">—</span>'}</dd></div>`;
         document.title = 'Your pets | Palmer’s Pet Care';
       }
 
@@ -155,13 +182,13 @@
           ${h ? `<img class="pp-chip-thumb" src="${imgUrl(h.url)}" alt="">` : `<span class="pp-chip-thumb" aria-hidden="true">${initial(p.name)}</span>`}
           <span class="pp-chip-text"><strong>${esc(p.name)}</strong><span>${esc(p.species)}</span></span>${chevron}
         </button>`; };
-      const value = (v, empty) => v ? `<p class="pp-value">${esc(v)}</p>` : `<p class="pp-value is-empty">${esc(empty)}</p>`;
+      const value = (v) => v ? `<p class="pp-value">${esc(v)}</p>` : '<p class="pp-value is-empty">—</p>';
       const profile = (p) => { const h = heroPhoto(p); return `
         <div class="pp-profile" id="profile-panel" role="tabpanel" aria-labelledby="chip-${esc(p.id)}">
           <div class="pp-photo-block">
             ${h ? `<img class="pp-profile-photo" src="${imgUrl(h.url)}" alt="${esc(p.profilePhotoUrl ? p.name + '’s profile photo' : (h.caption ? h.caption + ' — ' + p.name : 'Photo of ' + p.name))}">` : `<div class="pp-profile-photo is-placeholder" aria-hidden="true">${initial(p.name)}</div>`}
             <div class="pp-photo-tools">
-              <label class="pp-photo-change"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>${p.profilePhotoUrl ? 'Change photo' : 'Add a photo'}<input type="file" accept="image/*" data-profile-upload="${esc(p.id)}" hidden></label>
+              <label class="pp-photo-change"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>${p.profilePhotoUrl ? 'Change photo' : 'Add a photo'}<input type="file" accept="image/*,.heic,.heif" data-profile-upload="${esc(p.id)}" hidden></label>
               ${p.profilePhotoUrl ? `<button type="button" class="pp-textlink pp-photo-remove" data-profile-remove="${esc(p.id)}">Remove photo</button>` : ''}
             </div>
             <p class="pp-photo-status" role="status" aria-live="polite" data-profile-status></p>
@@ -171,11 +198,17 @@
             <h3>${esc(p.name)}</h3>
             <p class="pp-profile-meta">${esc(p.species)} · ${esc(p.age)}</p>
             <div class="pp-two">
-              <div><p class="pp-label">Breed</p>${value(p.breed, 'Not added yet')}</div>
-              <div><p class="pp-label">Feeding routine</p>${value(p.diet, 'Not added yet')}</div>
+              <div><p class="pp-label">Breed</p>${value(p.breed)}</div>
+              <div><p class="pp-label">Feeding routine</p>${value(p.diet)}</div>
             </div>
             <p class="pp-label">Personality &amp; care notes</p>
-            ${p.notes ? `<p class="pp-profile-notes">${esc(p.notes)}</p>` : '<p class="pp-profile-notes pp-value is-empty">Nothing added yet — tell us what makes ' + esc(p.name) + ' tick.</p>'}
+            ${p.notes ? `<p class="pp-profile-notes">${esc(p.notes)}</p>` : '<p class="pp-profile-notes pp-value is-empty">—</p>'}
+            <p class="pp-label pp-care-head">More care details</p>
+            <div class="pp-care-row"><p class="pp-label">Medication</p>${value(medicationText(p))}</div>
+            <div class="pp-two">
+              <div><p class="pp-label">Likes</p>${value(p.likes)}</div>
+              <div><p class="pp-label">Dislikes</p>${value(p.dislikes)}</div>
+            </div>
             <div class="pp-profile-actions">
               <button type="button" class="pp-primary" data-edit-pet="${esc(p.id)}">${pencil}Edit ${esc(possessive(p.name))} details</button>
               <button type="button" class="pp-textlink" data-remove-pet="${esc(p.id)}">Remove pet</button>
@@ -228,23 +261,20 @@
 
       // Pet add / edit
       const petForm = $('[data-pet-form]', account); fillSelects(petForm);
-      // Only offer fields the API can store (breed arrives with the pending migration).
-      const supports = (k) => Array.isArray(d.fields) && d.fields.includes(k);
-      petForm.querySelector('[data-field="breed"]').hidden = !supports('breed');
-      $('[data-owner-form] [data-field="address"]', account).hidden = !supports('address');
       function openPetModal(p, from) {
         petForm.reset(); petForm.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
         petForm.dataset.petId = p ? p.id : '';
         $('[data-pet-modal-title]', account).textContent = p ? `Edit ${possessive(p.name)} details` : 'Add a pet';
         $('[data-submit]', petForm).textContent = p ? 'Save changes' : 'Add pet';
-        if (p) { petForm.name.value = p.name; petForm.species.value = p.species; petForm.age.value = p.age; petForm.diet.value = p.diet || ''; petForm.notes.value = p.notes || ''; petForm.medication.value = p.medication || ''; petForm.medicationFrequency.value = p.medicationFrequency || ''; petForm.likes.value = p.likes || ''; petForm.dislikes.value = p.dislikes || ''; if (petForm.breed) petForm.breed.value = p.breed || ''; }
+        if (p) { petForm.name.value = p.name; petForm.species.value = p.species; petForm.age.value = p.age; petForm.breed.value = p.breed || ''; petForm.diet.value = p.diet || ''; petForm.notes.value = p.notes || ''; petForm.medication.value = p.medication || ''; petForm.medicationFrequency.value = p.medicationFrequency || ''; petForm.likes.value = p.likes || ''; petForm.dislikes.value = p.dislikes || ''; }
         $('.pp-more', petForm).open = !!(p && (p.medication || p.likes || p.dislikes));
         openDialog('pet', from); petForm.name.focus();
       }
       petForm.addEventListener('submit', async (e) => {
         e.preventDefault(); if (!validate(petForm)) return;
-        const body = { name: petForm.name.value, species: petForm.species.value, age: petForm.age.value, notes: petForm.notes.value, diet: petForm.diet.value, medication: petForm.medication.value, medicationFrequency: petForm.medicationFrequency.value, likes: petForm.likes.value, dislikes: petForm.dislikes.value };
-        if (supports('breed')) body.breed = petForm.breed.value;
+        petForm.medication.removeAttribute('aria-invalid');
+        if (petForm.medicationFrequency.value && !petForm.medication.value.trim()) { $('.pp-more', petForm).open = true; petForm.medication.setAttribute('aria-invalid', 'true'); petForm.medication.focus(); fail(petForm, 'Please enter the medication name, or set how often to “Not on medication”.'); return; }
+        const body = { name: petForm.name.value, species: petForm.species.value, age: petForm.age.value, breed: petForm.breed.value, notes: petForm.notes.value, diet: petForm.diet.value, medication: petForm.medication.value, medicationFrequency: petForm.medicationFrequency.value, likes: petForm.likes.value, dislikes: petForm.dislikes.value };
         busy(petForm, true); fail(petForm, '');
         try {
           const id = petForm.dataset.petId;
@@ -268,7 +298,9 @@
       const ownerForm = $('[data-owner-form]', account);
       ownerForm.addEventListener('submit', async (e) => {
         e.preventDefault(); if (!validate(ownerForm)) return;
-        const body = { name: ownerForm.name.value, phone: ownerForm.phone.value }; if (supports('address')) body.address = ownerForm.address.value;
+        ownerForm.workExt.removeAttribute('aria-invalid');
+        if (ownerForm.workExt.value && !/^\d{1,6}$/.test(ownerForm.workExt.value)) { ownerForm.workExt.setAttribute('aria-invalid', 'true'); ownerForm.workExt.focus(); fail(ownerForm, 'The extension should be digits only, up to 6.'); return; }
+        const body = { name: ownerForm.name.value, phone: ownerForm.phone.value, whatsapp: ownerForm.whatsapp.checked, workPhone: ownerForm.workPhone.value, workExt: ownerForm.workExt.value, address: ownerForm.address.value, emergencyName: ownerForm.emergencyName.value, emergencyRelationship: ownerForm.emergencyRelationship.value, emergencyPhone: ownerForm.emergencyPhone.value };
         busy(ownerForm, true); fail(ownerForm, '');
         try { const r = await api('/me', { method: 'PATCH', body }); d.owner = { ...d.owner, ...r.owner }; closeDialog(dlg('owner')); renderOwner(); }
         catch (err) { fail(ownerForm, err.message); }
@@ -284,25 +316,24 @@
         openDialog('lightbox', from);
       }
 
-      // Profile photo: square-crop in the browser (so a 6 MB phone photo lands as a ~100 KB JPEG), then upload.
-      function squareJpeg(file, size = 800) {
-        return new Promise((resolve, reject) => {
-          const img = new Image(); const url = URL.createObjectURL(file);
-          img.onload = () => { URL.revokeObjectURL(url); const side = Math.min(img.width, img.height); const out = Math.min(size, side); const c = document.createElement('canvas'); c.width = c.height = out; c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, out, out); resolve(c.toDataURL('image/jpeg', 0.85)); };
-          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file is not an image we can read.')); };
-          img.src = url;
-        });
-      }
+      // Profile photos: the browser sends the original file; the server sniffs the type, square-crops to 800px and strips metadata.
       const photoStatus = (text, kind) => { const el = $('[data-profile-status]', account); if (el) { el.textContent = text; el.className = 'pp-photo-status' + (kind ? ' ' + kind : ''); } };
       const applyPet = (pet) => { const i = d.pets.findIndex((x) => x.id === pet.id); if (i >= 0) d.pets[i] = { ...d.pets[i], ...pet }; };
+      const ownerPhotoStatus = (text, kind) => { const el = $('[data-owner-photo-status]', account); if (el) { el.textContent = text; el.className = 'pp-photo-status' + (kind ? ' ' + kind : ''); } };
+      function renderOwnerPhotoField() { const o = d.owner; $('[data-owner-photo-preview]', account).innerHTML = avatarHtml(o); $('[data-owner-upload-label]', account).textContent = o.photoUrl ? 'Replace photo' : 'Upload a photo'; $('[data-owner-photo-remove]', account).hidden = !o.photoUrl; }
       account.addEventListener('change', async (e) => {
+        const ownerInput = e.target.closest('[data-owner-upload]');
+        if (ownerInput && ownerInput.files && ownerInput.files[0]) {
+          const file = ownerInput.files[0]; ownerInput.value = '';
+          try { ownerPhotoStatus('Uploading photo…'); const r = await uploadPhoto('/me/photo', file); d.owner = { ...d.owner, ...r.owner }; renderOwner(); renderOwnerPhotoField(); ownerPhotoStatus('Photo updated', 'ok'); }
+          catch (err) { ownerPhotoStatus(err.message, 'error'); }
+          return;
+        }
         const input = e.target.closest('[data-profile-upload]'); if (!input || !input.files || !input.files[0]) return;
         const petId = input.dataset.profileUpload; const file = input.files[0]; input.value = '';
-        if (!/^image\//.test(file.type)) return photoStatus('Please choose a photo (JPEG, PNG or HEIC from your camera roll).', 'error');
         try {
           photoStatus('Uploading photo…');
-          const dataUrl = await squareJpeg(file);
-          const r = await api('/me/pets/' + encodeURIComponent(petId) + '/profile-photo', { method: 'POST', body: { dataUrl } });
+          const r = await uploadPhoto('/me/pets/' + encodeURIComponent(petId) + '/profile-photo', file);
           applyPet(r.pet); renderPets(); photoStatus('Photo updated', 'ok');
         } catch (err) { photoStatus(err.message, 'error'); }
       });
@@ -314,7 +345,8 @@
         const add = t.closest('[data-add-pet]'); if (add) { openPetModal(null, add); return; }
         const ed = t.closest('[data-edit-pet]'); if (ed) { openPetModal(d.pets.find((x) => x.id === ed.dataset.editPet), ed); return; }
         const rm = t.closest('[data-remove-pet]'); if (rm) { const p = d.pets.find((x) => x.id === rm.dataset.removePet); if (!p) return; confirmForm.dataset.petId = p.id; account.querySelectorAll('[data-confirm-name]').forEach((n) => { n.textContent = p.name; }); openDialog('confirm', rm); return; }
-        const eo = t.closest('[data-edit-owner]'); if (eo) { ownerForm.reset(); ownerForm.name.value = d.owner.name; ownerForm.email.value = d.owner.email; ownerForm.phone.value = d.owner.phone || ''; if (ownerForm.address) ownerForm.address.value = d.owner.address || ''; openDialog('owner', eo); ownerForm.name.focus(); return; }
+        const eo = t.closest('[data-edit-owner]'); if (eo) { const o = d.owner; ownerForm.reset(); ownerForm.name.value = o.name; ownerForm.email.value = o.email; ownerForm.phone.value = o.phone || ''; ownerForm.whatsapp.checked = !!o.whatsapp; ownerForm.workPhone.value = o.workPhone || ''; ownerForm.workExt.value = o.workExt || ''; ownerForm.address.value = o.address || ''; ownerForm.emergencyName.value = o.emergencyName || ''; ownerForm.emergencyRelationship.value = o.emergencyRelationship || ''; ownerForm.emergencyPhone.value = o.emergencyPhone || ''; renderOwnerPhotoField(); ownerPhotoStatus(''); openDialog('owner', eo); ownerForm.name.focus(); return; }
+        const opr = t.closest('[data-owner-photo-remove]'); if (opr) { (async () => { try { ownerPhotoStatus('Removing…'); const r = await api('/me/photo', { method: 'DELETE' }); d.owner = { ...d.owner, ...r.owner }; renderOwner(); renderOwnerPhotoField(); ownerPhotoStatus('Photo removed', 'ok'); } catch (err) { ownerPhotoStatus(err.message, 'error'); } })(); return; }
         const more = t.closest('[data-show-more]'); if (more) { state.showAll = true; renderDiary(); const grid = $('.pp-diary-grid', account); const cards = grid ? grid.children : []; if (cards[PAGE]) cards[PAGE].querySelector('button').focus(); return; }
         const rp = t.closest('[data-profile-remove]'); if (rp) { (async () => { try { photoStatus('Removing…'); const r = await api('/me/pets/' + encodeURIComponent(rp.dataset.profileRemove) + '/profile-photo', { method: 'DELETE' }); applyPet(r.pet); renderPets(); photoStatus('Photo removed', 'ok'); } catch (err) { photoStatus(err.message, 'error'); } })(); return; }
         const op = t.closest('[data-open-photo]'); if (op) { openLightbox(op.dataset.openPhoto, op); }
