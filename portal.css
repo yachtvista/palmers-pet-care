@@ -4,10 +4,6 @@
 .pp-side { background: var(--navy); color: #fff; padding: 1.4rem 1.1rem; display: flex; flex-direction: column; gap: 1.2rem; }
 .pp-side .brand { color: #fff; }
 .pp-side .brand strong, .pp-side .brand small { color: #fff; }
-.pp-side .brand { flex-direction: column; text-align: center; gap: .65rem; }
-.pp-side .brand img { width: 128px; height: 128px; }
-.pp-side .brand strong { font-size: 1.1rem; }
-@media (max-width: 760px) { .pp-side .brand img { width: 88px; height: 88px; } }
 .pp-side nav a, .pp-side nav button { display: block; width: 100%; text-align: left; padding: .6rem .75rem; margin: .15rem 0; border: 0; border-radius: 9px; background: transparent; color: #dfe4f7; font: inherit; font-size: .95rem; text-decoration: none; cursor: pointer; }
 .pp-side nav a:hover, .pp-side nav button:hover { background: rgba(255,255,255,.08); color: #fff; }
 .pp-side nav a[aria-current="page"] { background: var(--pp-purple); color: #fff; }
