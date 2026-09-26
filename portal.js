@@ -22,7 +22,7 @@
     while (Date.now() < until) { const t = turnstileToken(form); if (t) return t; await new Promise((r) => setTimeout(r, 250)); }
     return turnstileToken(form);
   }
-  const securityCheckFailed = 'The security check has not finished. Please reload the page and try again, or email enquiries@palmerspetcare.co.uk.';
+  const securityCheckFailed = 'Please tick “Verify you are human” above, then try again. If the box will not load, email enquiries@palmerspetcare.co.uk.';
   function status(form, text, kind) { const s = $('.form-status', form); if (s) { s.textContent = text; s.className = 'form-status' + (kind ? ' ' + kind : ''); } }
   function fillSelects(form) {
     const species = ['Dog', 'Cat', 'Rabbit', 'Guinea pig', 'Hamster', 'Bird', 'Reptile', 'Other'];
