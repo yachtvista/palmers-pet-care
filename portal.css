@@ -267,3 +267,18 @@ img.pp-avatar { object-fit: cover; }
 .pp-checklist .yes { color: #1f7a45; font-weight: 700; }
 .pp-checklist .no { color: #6b7385; }
 @media (max-width: 640px) { .pp-checklist { grid-template-columns: 1fr; } }
+
+/* Phone: the account sidebar collapses to a slim bar with a burger, matching the public site's menu. */
+.pp-burger { display: none; }
+@media (max-width: 760px) {
+  .pp-side { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .6rem; padding: .7rem 1rem; }
+  .pp-side .brand { flex: 1 1 auto; min-width: 0; flex-direction: row; text-align: left; gap: .6rem; }
+  .pp-side .brand img { width: 44px; height: 44px; }
+  .pp-side .brand strong { font-size: 1rem; }
+  .pp-burger { display: block; margin-left: auto; flex: none; background: transparent; border-color: rgba(255, 255, 255, .38); color: #fff; }
+  .pp-burger span { background: #fff; }
+  .pp-burger:hover { background: rgba(255, 255, 255, .1); }
+  .pp-side.pp-nav-open .pp-burger { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .6); }
+  .pp-side nav { display: none; flex-basis: 100%; }
+  .pp-side.pp-nav-open nav { display: block; }
+}
