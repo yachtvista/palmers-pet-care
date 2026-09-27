@@ -6,7 +6,7 @@
   const iso = d => d.toISOString().slice(0,10), day = s => new Date(s + 'T00:00:00Z');
   const today = new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let month = day(today); month.setUTCDate(1);
-  let pets = [], services = [], bookings = [], editing = null, copyId = null, busy = false;
+  let pets = [], services = [], bookings = [], availability = [], editing = null, copyId = null, busy = false;
   const form = $('#booking-form'), dialog = $('#booking-dialog'), fields = form.elements;
   async function api(path, method = 'GET', body) {
     const r = await fetch(API + path, {method, credentials:'include', headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
@@ -20,17 +20,19 @@
     const end = b.unit === 'days' ? +day(b.date) + b.duration*86400000 : start + b.duration*3600000;
     return +day(date) < end && +day(date) + 86400000 > start;
   }
+  const dayStatus = date => availability.find(d => d.date === date)?.status;
+  const statusLabel = b => b.status === 'approved' ? 'Approved' : 'Awaiting approval';
   function render() {
     $('#month-title').textContent = month.toLocaleDateString('en-GB', {month:'long',year:'numeric',timeZone:'UTC'});
     const start = new Date(month); start.setUTCDate(1 - (month.getUTCDay()+6)%7);
     const cells = [];
     for (let i=0;i<42;i++) {
-      const d = new Date(start); d.setUTCDate(d.getUTCDate()+i); const date = iso(d);
-      cells.push(`<div class="calendar-day ${d.getUTCMonth() !== month.getUTCMonth() ? 'outside' : ''} ${date === today ? 'is-today' : ''}" data-date="${date}"><time datetime="${date}">${d.getUTCDate()}</time>${bookings.filter(b => occurs(b,date)).map(b => `<button type="button" class="calendar-event" data-edit="${esc(b.id)}" aria-label="Edit ${esc(b.petNames.join(', '))}, ${date}">${esc(b.petNames.join(', '))}<small>${esc(b.time)} · ${esc(serviceFor(b).name)}</small></button>`).join('')}<button class="calendar-add" type="button" data-add="${date}" aria-label="${copyId ? 'Copy booking to' : 'Book pet care on'} ${date}" ${pets.length ? '' : 'disabled'}>+</button></div>`);
+      const d = new Date(start); d.setUTCDate(d.getUTCDate()+i); const date = iso(d), closed = dayStatus(date);
+      cells.push(`<div class="calendar-day ${d.getUTCMonth() !== month.getUTCMonth() ? 'outside' : ''} ${date === today ? 'is-today' : ''}" data-date="${date}"><time datetime="${date}">${d.getUTCDate()}</time>${bookings.filter(b => occurs(b,date)).map(b => `<button type="button" class="calendar-event" data-edit="${esc(b.id)}" aria-label="Edit ${esc(b.petNames.join(', '))}, ${date}">${esc(b.petNames.join(', '))}<small>${esc(b.time)} · ${esc(serviceFor(b).name)}</small><small class="booking-state">${statusLabel(b)}</small></button>`).join('')}<button class="calendar-add" type="button" data-add="${date}" aria-label="${copyId ? 'Copy booking to' : 'Book pet care on'} ${date}" ${pets.length && !closed ? '' : 'disabled'}>${closed ? (closed === 'full' ? 'Full' : 'Unavailable') : '+'}</button></div>`);
     }
     $('#calendar-days').innerHTML = cells.join('');
     $('#cancel-copy').hidden = !copyId;
-    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => a.date.localeCompare(b.date)).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(serviceFor(b).name)}</p><p>${esc(b.date)} · ${esc(b.time)} · ${b.duration} ${b.unit}</p><p>${money(b.total)} estimated</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
+    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => a.date.localeCompare(b.date)).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(serviceFor(b).name)}</p><p>${esc(b.date)} · ${esc(b.time)} · ${b.duration} ${b.unit}</p><p>${money(b.total)} estimated</p><p class="booking-state">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
   }
   function selectedPets() { return [...form.querySelectorAll('[name="petId"]:checked')].map(el => pets.find(p => p.id === el.value)); }
   function updateCost(reset = false) {
@@ -45,9 +47,10 @@
   }
   function open(date, b, copy = false) {
     if (busy) return;
+    if ((!b || copy) && dayStatus(date)) { $('#calendar-status').textContent = 'This day is full or unavailable. Choose another date.'; return; }
     editing = copy ? null : b?.id || null;
     $('#booking-title').textContent = editing ? 'Edit appointment' : copy ? 'Repeat appointment' : 'Book pet care';
-    $('#save-booking').textContent = editing ? 'Save changes' : 'Confirm booking';
+    $('#save-booking').textContent = editing ? 'Save changes for approval' : 'Request booking';
     $('#remove-booking').hidden = !editing; $('#remove-booking').textContent = 'Remove'; $('#remove-booking').dataset.confirm = '';
     $('#booking-error').textContent = '';
     $('#pet-options').innerHTML = pets.map(p => `<label><input type="checkbox" name="petId" value="${esc(p.id)}" ${b?.petIds.includes(p.id) ? 'checked' : ''}><span>${esc(p.name)}</span></label>`).join('');
@@ -77,9 +80,9 @@
     e.preventDefault(); if (busy) return;
     const petIds = selectedPets().map(p => p.id);
     if (!petIds.length) { $('#booking-error').textContent = 'Choose at least one pet.'; return; }
-    const payload = {petIds,serviceId:fields.serviceId.value,date:fields.date.value,time:fields.time.value,duration:Number(fields.duration.value)};
+    const payload = {petIds,serviceId:fields.serviceId.value,date:fields.date.value,time:fields.time.value,duration:Number(fields.duration.value), version:bookings.find(b => b.id === editing)?.version};
     lock(true); $('#booking-error').textContent = '';
-    try { const {booking} = await api('/me/bookings' + (editing ? '/'+editing : ''),editing ? 'PATCH' : 'POST',payload); bookings = bookings.filter(b => b.id !== booking.id).concat(booking); render(); dialog.close(); $('#calendar-status').textContent = 'Appointment saved to your account.'; }
+    try { const {booking} = await api('/me/bookings' + (editing ? '/'+editing : ''),editing ? 'PATCH' : 'POST',payload); bookings = bookings.filter(b => b.id !== booking.id).concat(booking); render(); dialog.close(); $('#calendar-status').textContent = 'Appointment saved to your account and awaiting admin approval.'; }
     catch (e) { $('#booking-error').textContent = e.message; } finally { lock(false); }
   });
   $('#remove-booking').onclick = async () => {
@@ -90,7 +93,8 @@
     catch(e) { $('#booking-error').textContent=e.message; } finally { lock(false); }
   };
   (async () => { try {
-    const [account,data] = await Promise.all([api('/me'),api('/me/bookings')]); pets=account.pets; services=data.services; bookings=data.bookings;
+    const [account,data] = await Promise.all([api('/me'),api('/me/bookings')]); pets=account.pets; services=data.services; bookings=data.bookings; availability=data.availability || [];
+    if (account.isAdmin) $('[data-admin-calendar-link]').hidden = false;
     fields.serviceId.innerHTML=services.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
     $('#booking-content').hidden=false; $('#calendar-status').innerHTML=pets.length ? '' : 'Add a pet in <a href="account.html">your account</a> before booking.'; render();
   } catch(e) { $('#calendar-status').textContent = 'Unable to load your calendar. '+e.message+' Refresh to try again.'; } })();
