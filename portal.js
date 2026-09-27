@@ -115,6 +115,27 @@
   }
 
   // ----- Shared portal chrome -----
+  // On a phone the account sidebar becomes a slim bar with a burger, like the public site's menu,
+  // instead of stacking every link down the screen. Built here so no page markup has to change.
+  (function mobileNav() {
+    const side = $('.pp-side'); if (!side) return;
+    const nav = $('nav', side); if (!nav || $('.pp-burger', side)) return;
+    if (!nav.id) nav.id = 'pp-account-nav';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'menu-toggle pp-burger';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', nav.id);
+    btn.setAttribute('aria-label', 'Account menu');
+    btn.innerHTML = '<span></span><span></span><span></span><b>Menu</b>';
+    side.insertBefore(btn, nav);
+    const setOpen = (open) => { side.classList.toggle('pp-nav-open', open); btn.setAttribute('aria-expanded', String(open)); };
+    btn.addEventListener('click', () => setOpen(!side.classList.contains('pp-nav-open')));
+    nav.addEventListener('click', (e) => { if (e.target.closest('a, button')) setOpen(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && side.classList.contains('pp-nav-open')) { setOpen(false); btn.focus(); } });
+    window.addEventListener('resize', () => { if (window.innerWidth > 760) setOpen(false); });
+  })();
+
   async function signOut() { try { await api('/logout', { method: 'POST' }); } catch (e) { /* already out */ } location.href = 'login.html'; }
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-signout]'); if (b) { e.preventDefault(); signOut(); } });
 
