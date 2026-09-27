@@ -3,3 +3,7 @@
 .calendar-card,.repeat-panel,.booking-layout{min-width:0}
 .pp-main{min-width:0;background:#f7f4ee}
 .booking-state{font-weight:700;color:#476544;font-size:12px}.calendar-add:disabled{font-size:11px;color:#78686c;border-color:#b4a7aa;cursor:not-allowed;min-height:35px}.admin-calendar-day{display:block;text-align:left;background:white;border-top:0;border-left:0;border-radius:0;font:inherit;cursor:pointer;align-self:stretch}.admin-calendar-day:hover{background:#f1f5ee}.admin-calendar-day:focus-visible{outline:3px solid #633f85;outline-offset:-3px}.admin-calendar-day .calendar-event{cursor:inherit}.day-availability{display:block;font-size:11px;font-weight:700;padding:6px;border:1px solid #8caa91;border-radius:7px;color:#42624f}.day-availability.full,.day-availability.unavailable{border-color:#b4a7aa;color:#78686c}.admin-day-modal{width:min(720px,94vw);max-width:720px;max-height:90vh;overflow:auto}.admin-appointment{border:1px solid #dce5df;border-radius:12px;padding:18px;margin:15px 0}.admin-appointment h3{margin:0 0 8px}.admin-appointment p{font-size:13px;overflow-wrap:anywhere}.admin-appointment dl{font-size:13px}.admin-appointment dl>div{display:flex;gap:12px;margin:7px 0}.admin-appointment dt{min-width:100px;color:#64766d}.admin-appointment dd{margin:0}#day-status{font-size:14px;color:#42624f}
+
+/* Keep the wording as well as colour so approval state is accessible. */
+.booking-state.is-pending,.repeat-card .booking-state.is-pending{color:#b42318}
+.booking-state.is-approved,.repeat-card .booking-state.is-approved{color:#237a3b}
