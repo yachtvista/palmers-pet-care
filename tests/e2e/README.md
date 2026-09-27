@@ -9,3 +9,5 @@ Playwright scripts used to verify the customer dashboard (account.html) and admi
 
 Booking calendar: `PLAYWRIGHT_MODULE=/path/to/playwright-core node tests/e2e/bookings.cjs`.
 This self-contained browser check intercepts the API with test fixtures (no live customer data). It covers pet selection, estimates, multi-day entries, reload, editing, deletion, keyboard/touch copying, drag-and-drop and mobile overflow. The real Worker/database path is checked separately by `node tests/bookings.mjs` in the API repository.
+
+Admin approvals and availability: `PLAYWRIGHT_MODULE=/path/to/playwright-core node tests/e2e/admin-calendar.mjs` (Node 24+). Requires the adjacent `palmers-pet-care-api` checkout. The browser uses the actual Worker against an isolated SQLite database and verifies daily admin details, approval, customer status, closed dates, reopening, persistence and non-admin access denial.
