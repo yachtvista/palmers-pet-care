@@ -282,3 +282,7 @@ img.pp-avatar { object-fit: cover; }
   .pp-side nav { display: none; flex-basis: 100%; }
   .pp-side.pp-nav-open nav { display: block; }
 }
+
+
+/* Standalone booking entry point in the customer portal. */
+.pp-booking-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:25px 30px;margin:0 0 24px;border:1px solid #cbdaca;border-radius:18px;background:#edf3e8}.pp-booking-cta h2{font-family:'Source Serif 4',serif;font-size:27px;margin:5px 0 8px}.pp-booking-cta p{margin:0;font-size:13px;color:#526b5d}.pp-booking-cta .pp-primary{white-space:nowrap;text-decoration:none}@media(max-width:600px){.pp-booking-cta{align-items:flex-start;flex-direction:column;padding:22px}}
