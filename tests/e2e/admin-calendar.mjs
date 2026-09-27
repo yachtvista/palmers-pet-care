@@ -35,19 +35,37 @@ try{
  await admin.goto('http://127.0.0.1:8788/admin-calendar.html');await admin.waitForSelector('[data-day]');
  await admin.locator(`[data-day="${date}"]`).click();await admin.waitForSelector('[data-approve]');
  assert.match(await admin.locator('#day-appointments').textContent(),/a@example.com/);
+ await customer.goto('http://127.0.0.1:8788/bookings.html');await customer.waitForSelector('.calendar-event');
+ assert.equal(await customer.locator('.calendar-event .booking-state').first().evaluate(el=>getComputedStyle(el).color),'rgb(180, 35, 24)');
  await admin.locator('[data-approve]').click();await admin.waitForFunction(()=>document.querySelector('#day-status').textContent==='Appointment approved.');
- await customer.goto('http://127.0.0.1:8788/bookings.html');await customer.waitForSelector('.calendar-event');assert.match(await customer.locator('.calendar-event').first().textContent(),/Approved/);
+ await customer.waitForSelector('.calendar-event .is-approved');
+ assert.equal(await customer.locator('.calendar-event .booking-state').first().evaluate(el=>getComputedStyle(el).color),'rgb(35, 122, 59)');
+ assert.equal(await customer.locator('.repeat-card .booking-state').first().evaluate(el=>getComputedStyle(el).color),'rgb(35, 122, 59)');
  await admin.selectOption('[name=status]','full');await admin.locator('#availability-form button').click();await admin.waitForFunction(()=>document.querySelector('#day-status').textContent.startsWith('Availability saved'));
- await customer.reload();await customer.waitForSelector('.calendar-event');assert(await customer.locator(`[data-add="${date}"]`).isDisabled());assert.equal(await customer.locator('.calendar-event').count(),2);
+ await customer.waitForFunction(date=>document.querySelector(`[data-add="${date}"]`).disabled,date);assert.equal(await customer.locator('.calendar-event').count(),2);
  // A stale calendar cannot bypass closure through a manually entered start date.
  await customer.locator(`[data-add="${emptyDate}"]`).click();await customer.locator('.pet-options label').first().click();await customer.fill('[name=date]',date);await customer.click('#save-booking');await customer.waitForFunction(()=>document.querySelector('#booking-error').textContent.includes('full or unavailable'));await customer.locator('[data-dismiss]').first().click();
  await admin.selectOption('[name=status]','open');await admin.locator('#availability-form button').click();await admin.waitForFunction(()=>document.querySelector('#day-status').textContent.startsWith('Availability saved'));
- await customer.reload();await customer.waitForSelector('.calendar-event');await customer.locator('.calendar-event').first().click();await customer.fill('[name=duration]','3');await customer.click('#save-booking');await customer.waitForFunction(()=>!document.querySelector('#booking-dialog').open);assert.match(await customer.locator('.calendar-event').first().textContent(),/Awaiting approval/);
+ await customer.waitForFunction(date=>!document.querySelector(`[data-add="${date}"]`).disabled,date);await customer.locator('.calendar-event').first().click();await customer.fill('[name=duration]','3');await customer.click('#save-booking');await customer.waitForFunction(()=>!document.querySelector('#booking-dialog').open);assert.match(await customer.locator('.calendar-event').first().textContent(),/Awaiting approval/);
+ await admin.waitForSelector('[data-approve]');
+ // Polling updates the open day without overwriting an unsaved availability choice.
+ await admin.selectOption('[name=status]','full');
+ const added=await call('POST','/me/bookings',{...payload,time:'12:00'});
+ await admin.waitForFunction(()=>document.querySelectorAll('.admin-appointment').length===2);
+ assert.equal(await admin.locator('[name=status]').inputValue(),'full');
+ await call('DELETE','/me/bookings/'+added.booking.id);
+ await admin.waitForFunction(()=>document.querySelectorAll('.admin-appointment').length===1);
  await admin.click('#close-day');await admin.locator(`[data-day="${emptyDate}"]`).click();await admin.waitForFunction(()=>document.querySelector('#day-appointments').textContent.includes('No appointments'));
- await admin.selectOption('[name=status]','unavailable');await admin.locator('#availability-form button').click();await admin.waitForFunction(()=>document.querySelector('#day-status').textContent.startsWith('Availability saved'));await admin.click('#close-day');await admin.reload();await admin.waitForSelector('[data-day]');assert.match(await admin.locator(`[data-day="${emptyDate}"]`).textContent(),/Unavailable/);
- await customer.reload();await customer.waitForSelector('.calendar-add');assert(await customer.locator(`[data-add="${emptyDate}"]`).isDisabled());
+ await admin.selectOption('[name=status]','unavailable');await admin.locator('#availability-form button').click();await admin.waitForFunction(()=>document.querySelector('#day-status').textContent.startsWith('Availability saved'));await admin.click('#close-day');assert.match(await admin.locator(`[data-day="${emptyDate}"]`).textContent(),/Unavailable/);
+ await customer.waitForFunction(date=>document.querySelector(`[data-add="${date}"]`).disabled,emptyDate);
  const forbidden=await pageFor('b');await forbidden.goto('http://127.0.0.1:8788/admin-calendar.html');await forbidden.waitForFunction(()=>document.querySelector('#calendar-status').textContent.includes('Only admin'));assert.equal(await forbidden.locator('[data-day]').count(),0);
  await admin.setViewportSize({width:390,height:844});assert(await admin.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await admin.locator(`[data-day="${date}"]`).click();await admin.waitForSelector('[data-approve]');await admin.screenshot({path:'/private/tmp/palmers-admin-day-mobile.png',fullPage:true});
+ // Keep an in-progress customer draft and its original version when an approval arrives.
+ await customer.locator('.calendar-event').first().click();await customer.fill('[name=duration]','4');
+ await admin.locator('[data-approve]').click();await customer.waitForSelector('.calendar-event .is-approved');
+ assert.equal(await customer.locator('[name=duration]').inputValue(),'4');
+ await customer.click('#save-booking');await customer.waitForFunction(()=>document.querySelector('#booking-error').textContent.includes('changed'));
+ assert.equal((await call('GET','/me/bookings')).bookings[0].duration,3);
  assert.deepEqual(errors,[]);
- console.log('PASS browser + real Worker: admin day details, approval, full/unavailable dates, reopening, persistence, rejected closed-day writes, edit reapproval, access control and mobile layout');
+ console.log('PASS automatic sync without reload, red/green status, open-day changes, draft preservation, stale-edit protection; browser + real Worker: admin day details, approval, full/unavailable dates, reopening, persistence, rejected closed-day writes, edit reapproval, access control and mobile layout');
 }finally{await browser.close();}
