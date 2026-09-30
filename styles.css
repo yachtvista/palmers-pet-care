@@ -346,3 +346,25 @@ body.menu-open .topbar nav { display: block; }
 .topbar nav li { border-bottom: 1px solid #f0ede8; list-style: none; }
 .topbar nav a { display: block; padding: .8rem .25rem; }
 .topbar nav a:hover { color: var(--accent); opacity: 1; }
+
+/* Cat and ball of yarn on top of the homepage local nav (cat-yarn.js). Decorative. */
+.local-nav { position: relative; }
+.cat-yarn { position: absolute; left: 1.2rem; right: 1.2rem; bottom: 100%; height: 64px; pointer-events: none; color: var(--navy); container-type: inline-size; }
+.cy-cat { position: absolute; left: 0; bottom: 0; width: 84px; height: 56px; }
+.cy-ball { position: absolute; left: 0; bottom: 0; width: 22px; height: 22px; }
+.cy-cat svg, .cy-ball svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.cy-cat svg { fill: currentColor; }
+.cy-cat svg g, .cy-cat svg circle { transform-box: fill-box; }
+.cy-far { fill: #3a5680; }
+.cy-eye { fill: var(--cream); transform-origin: 50% 50%; }
+.cy-leg { transform-origin: 50% 0; }
+.cy-stand { transform-origin: 30% 100%; }
+.cy-tail { transform-origin: 100% 100%; }
+.cy-sit { opacity: 0; }
+.cy-sit-tail { transform-origin: 100% 85%; }
+.cy-thread { position: absolute; left: 0; bottom: 0; height: 2px; width: 0; border-radius: 2px; background: #2e6b8a; opacity: .5; }
+@media (max-width: 520px) {
+  .cat-yarn { height: 50px; }
+  .cy-cat { width: 66px; height: 44px; }
+  .cy-ball { width: 18px; height: 18px; }
+}
