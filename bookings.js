@@ -1,7 +1,8 @@
 /* Account bookings: persisted by the authenticated API, with server-calculated prices.
-   Timed bookings are a from–to window on a 30-minute grid (07:00–20:00 UK time) with 30 minutes
-   between bookings. booking-slots.js holds the same rules the server enforces; this page only uses
-   them to grey out what would be refused. Other customers' bookings arrive as times only. */
+   A booking is a chain of activities (activity-booker.js): daytime walks and visits from a start
+   time, or an overnight 20:00 → 08:00 that can be extended. booking-slots.js holds the same rules the
+   server enforces; this page only uses them to grey out what would be refused. Other customers'
+   bookings arrive as windows only — never who or what. */
 (() => {
   const API = ['localhost', '127.0.0.1'].includes(location.hostname) ? 'http://127.0.0.1:8787' : 'https://api.palmerspetcare.co.uk';
   const S = window.BookingSlots;
@@ -9,25 +10,38 @@
   const money = p => new Intl.NumberFormat('en-GB', { style:'currency', currency:'GBP' }).format(p / 100);
   const iso = d => d.toISOString().slice(0,10), day = s => new Date(s + 'T00:00:00Z');
   const londonNow = () => { const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).map(x => [x.type, x.value])); return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` }; };
+  const shortDay = date => day(date).toLocaleDateString('en-GB', {weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
   let today = londonNow().date;
   let month = day(today); month.setUTCDate(1);
   let pets = [], services = [], bookings = [], availability = [], busyTimes = [], editing = null, copyId = null, busy = false, dragging = false, editingVersion = null, sync;
-  let dayDate = null, sheet = { half: null, base: null };
+  let dayDate = null;
   const form = $('#booking-form'), dialog = $('#booking-dialog'), dayDialog = $('#day-dialog'), fields = form.elements;
   async function api(path, method = 'GET', body, signal) {
     const r = await fetch(API + path, {method, signal, cache:'no-store', credentials:'include', headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
     if (r.status === 401) { location.href = 'login.html'; throw new Error('Please sign in again.'); }
     const data = await r.json(); if (!r.ok) throw Object.assign(new Error(data.error || 'Could not save your appointment. Please try again.'), { data }); return data;
   }
-  const serviceFor = b => services.find(s => s.id === b.serviceId) || { name: b.serviceId, step: 0.5, unit: b.unit };
   const isPast = date => date < today;
-  function occurs(b, date) {
-    if (b.unit === 'days') return +day(date) >= +day(b.date) && +day(date) < +day(b.date) + b.duration*86400000;
-    return b.date === date;
-  }
   const dayStatus = date => availability.find(d => d.date === date)?.status;
   const statusLabel = b => b.status === 'approved' ? 'Approved' : 'Awaiting approval';
-  const when = b => b.unit === 'days' ? `from ${b.time} · ${b.duration} night${b.duration === 1 ? '' : 's'}` : `${b.start || b.time}–${b.end || ''}`;
+  const blocking = b => ['pending', 'approved'].includes(b.status);
+  // A booking's products in order (older bookings had one service and a length instead).
+  const productsOf = b => Array.isArray(b.activities) ? b.activities.map(a => a.serviceId)
+    : b.serviceId === 'sitting' || b.unit === 'days' ? ['sitting']
+    : Array(Math.max(1, Math.round((b.duration || 0.5) * 60 / (S.PRODUCT_MIN[b.serviceId] || 30)))).fill(b.serviceId);
+  const windowOf = b => b.startAt != null ? { start: b.startAt, end: b.endAt } : { start: S.absAt(b.date, b.start || b.time), end: S.absAt(b.date, b.start || b.time) + Math.round((b.duration || 0) * (b.unit === 'days' ? 1440 : 60)) };
+  const KIND_NAME = { walk: 'Dog walk', visit: 'Home visit', overnight: 'Overnight house-sit' };
+  function titleOf(b) {
+    const groups = [];
+    for (const id of productsOf(b)) { const k = S.KIND[id], last = groups[groups.length - 1]; if (last && last.k === k && k !== 'overnight') last.m += S.PRODUCT_MIN[id]; else groups.push({ k, m: S.PRODUCT_MIN[id] }); }
+    return groups.map(g => g.k === 'overnight' ? KIND_NAME.overnight : `${KIND_NAME[g.k]} ${S.durationLabel(g.m)}`).join(' + ');
+  }
+  function when(b) {
+    const w = windowOf(b), endDate = S.dateOf(w.end);
+    return endDate !== b.date ? `${S.timeOf(w.start)} → ${S.timeOf(w.end)} ${shortDay(endDate)}` : `${S.timeOf(w.start)}–${S.timeOf(w.end)}`;
+  }
+  // A booking shows on every date its window touches.
+  function occurs(b, date) { const w = windowOf(b), d0 = S.dayNum(date) * S.DAY; return w.start < d0 + S.DAY && w.end > d0; }
   function render() {
     $('#month-title').textContent = month.toLocaleDateString('en-GB', {month:'long',year:'numeric',timeZone:'UTC'});
     const start = new Date(month); start.setUTCDate(1 - (month.getUTCDay()+6)%7);
@@ -37,27 +51,28 @@
       const add = past
         ? `<button class="calendar-add" type="button" disabled aria-label="${date} is in the past">Past</button>`
         : `<button class="calendar-add" type="button" data-add="${date}" aria-label="${copyId ? 'Copy booking to' : 'Book pet care on'} ${date}" ${pets.length && !closed ? '' : 'disabled'}>${closed ? (closed === 'full' ? 'Full' : 'Unavailable') : '+'}</button>`;
-      cells.push(`<div class="calendar-day ${d.getUTCMonth() !== month.getUTCMonth() ? 'outside' : ''} ${date === today ? 'is-today' : ''} ${past ? 'is-past' : ''}" data-date="${date}"><time datetime="${date}">${d.getUTCDate()}</time>${bookings.filter(b => occurs(b,date)).map(b => `<button type="button" class="calendar-event" data-edit="${esc(b.id)}" aria-label="Edit ${esc(b.petNames.join(', '))}, ${date}">${esc(b.petNames.join(', '))}<small>${esc(when(b))} · ${esc(serviceFor(b).name)}</small><small class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</small></button>`).join('')}${add}</div>`);
+      cells.push(`<div class="calendar-day ${d.getUTCMonth() !== month.getUTCMonth() ? 'outside' : ''} ${date === today ? 'is-today' : ''} ${past ? 'is-past' : ''}" data-date="${date}"><time datetime="${date}">${d.getUTCDate()}</time>${bookings.filter(b => occurs(b,date)).map(b => `<button type="button" class="calendar-event" data-edit="${esc(b.id)}" aria-label="Edit ${esc(b.petNames.join(', '))}, ${date}">${esc(b.petNames.join(', '))}<small>${esc(when(b))} · ${esc(titleOf(b))}</small><small class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</small></button>`).join('')}${add}</div>`);
     }
     $('#calendar-days').innerHTML = cells.join('');
     $('#cancel-copy').hidden = !copyId;
-    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => (a.date + (a.start || a.time)).localeCompare(b.date + (b.start || b.time))).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(serviceFor(b).name)}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} estimated</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
+    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => windowOf(a).start - windowOf(b).start).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(titleOf(b))}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} estimated</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
     if (dayDialog.open) renderDay();
   }
 
-  // ---------- the rules, as this customer sees them for one date ----------
-  // Every blocking window on the date except the one being edited: other people's (times only) and our own.
-  function othersOn(date, exceptId) {
-    const mine = bookings.filter(b => b.unit === 'hours' && b.date === date && b.id !== exceptId && b.start && b.end && ['pending','approved'].includes(b.status)).map(b => ({ start: S.toMin(b.start), end: S.toMin(b.end) }));
-    const theirs = busyTimes.filter(b => b.date === date).map(b => ({ start: S.toMin(b.start), end: S.toMin(b.end) }));
+  // ---------- the rules, as this customer sees them ----------
+  // Every blocking window except the one being edited: ours (same household — no travel gap) and
+  // everyone else's (times only).
+  function othersFor(_date, exceptId) {
+    const mine = bookings.filter(b => b.id !== exceptId && blocking(b)).map(b => ({ ...windowOf(b), same: true }));
+    const theirs = busyTimes.map(b => ({ start: b.startAt, end: b.endAt, same: false }));
     return mine.concat(theirs);
   }
-  function ctxFor(date, exceptId, unitMin) {
-    const now = londonNow();
-    return { others: othersOn(date, exceptId), closed: !!dayStatus(date), nowMin: date === now.date ? S.toMin(now.time) : (date < now.date ? 24 * 60 : null), unit: unitMin || S.STEP };
-  }
+  const booker = window.ActivityBooker($('#booker'), {
+    services: () => services, others: othersFor, isClosed: date => !!dayStatus(date), now: londonNow,
+    onChange: () => { $('#save-booking').disabled = busy || !booker.value(); },
+  });
 
-  // ---------- day view: AM and PM ----------
+  // ---------- day view: AM, PM and overnight ----------
   function openDay(date) {
     if (busy || isPast(date)) return;
     dayDate = date; $('#day-error').textContent = '';
@@ -65,98 +80,67 @@
     renderDay(); dayDialog.showModal();
   }
   function renderDay() {
-    const date = dayDate, closed = dayStatus(date), starts = S.startOptions(ctxFor(date, null));
-    for (const half of ['am', 'pm']) {
-      const inHalf = m => half === 'am' ? m < 12 * 60 : m >= 12 * 60;
+    const date = dayDate, d0 = S.dayNum(date) * S.DAY, closed = dayStatus(date), now = londonNow(), nowAt = S.absAt(now.date, now.time);
+    const others = othersFor(date, null), starts = S.startOptions(date, S.STEP, { others, closed: !!closed, nowAt });
+    const night = S.chain(date, S.OVERNIGHT_START, ['sitting']);
+    const nightBlocked = closed || dayStatus(S.dateOf(night.endAt)) || night.startAt < nowAt || S.conflictWith(night.startAt, night.endAt, others);
+    const inBox = (half, w) => half === 'night' ? w.start < night.endAt && w.end > night.startAt
+      : (half === 'am' ? w.start < d0 + 720 && w.end > d0 : w.start < d0 + 20 * 60 && w.end > d0 + 720);
+    for (const half of ['am', 'pm', 'night']) {
       const box = dayDialog.querySelector(`[data-half="${half}"]`);
-      const mine = bookings.filter(b => b.unit === 'hours' && b.date === date && b.start && inHalf(S.toMin(b.start)));
-      const taken = busyTimes.filter(b => b.date === date && inHalf(S.toMin(b.start)));
-      const items = [...mine.map(b => ({ at: b.start, html: `<button type="button" class="half-item is-mine" data-edit="${esc(b.id)}"><strong>${esc(b.start)}–${esc(b.end)}</strong> ${esc(b.petNames.join(', '))} · ${esc(serviceFor(b).name)} <small class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</small></button>` })),
-        ...taken.map(b => ({ at: b.start, html: `<p class="half-item is-taken"><strong>${esc(b.start)}–${esc(b.end)}</strong> Unavailable</p>` }))].sort((a, b) => a.at.localeCompare(b.at));
-      const free = starts.some(o => inHalf(o.min) && !o.reason);
+      const mine = bookings.filter(b => inBox(half, windowOf(b)));
+      const taken = busyTimes.filter(b => inBox(half, { start: b.startAt, end: b.endAt }));
+      const items = [...mine.map(b => ({ at: windowOf(b).start, html: `<button type="button" class="half-item is-mine" data-edit="${esc(b.id)}"><strong>${esc(when(b))}</strong> ${esc(b.petNames.join(', '))} · ${esc(titleOf(b))} <small class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</small></button>` })),
+        ...taken.map(b => ({ at: b.startAt, html: `<p class="half-item is-taken"><strong>${esc(when({ date: S.dateOf(b.startAt), startAt: b.startAt, endAt: b.endAt }))}</strong> Unavailable</p>` }))].sort((a, b) => a.at - b.at);
+      const free = half === 'night' ? !nightBlocked : starts.some(o => (half === 'am' ? o.min < 720 : o.min >= 720) && !o.reason);
+      const copying = copyId && bookings.find(b => b.id === copyId);
+      // A copied overnight goes in the overnight box; a copied daytime booking in AM or PM.
+      const fitsCopy = !copying || (half === 'night') === (productsOf(copying)[0] === 'sitting');
       box.innerHTML = closed
         ? `<p class="half-closed">Not available</p>`
-        : `${items.map(i => i.html).join('') || '<p class="half-empty">Nothing booked yet.</p>'}${free
-          ? `<button type="button" class="half-add" data-book-half="${half}" aria-label="Book a time in the ${half === 'am' ? 'morning' : 'afternoon'}">+</button>`
-          : `<p class="half-closed">No times left</p>`}`;
+        : `${items.map(i => i.html).join('') || '<p class="half-empty">Nothing booked yet.</p>'}${free && fitsCopy
+          ? `<button type="button" class="half-add" data-book-half="${half}" aria-label="${half === 'night' ? 'Book an overnight' : `Book a time in the ${half === 'am' ? 'morning' : 'afternoon'}`}">+</button>`
+          : `<p class="half-closed">${half === 'night' ? 'Overnight not available' : 'No times left'}</p>`}`;
     }
   }
 
   // ---------- the booking sheet ----------
-  const fromWheel = window.BookingWheel($('#from-wheel'), { label: 'From', onChange: () => refreshTo() });
-  const toWheel = window.BookingWheel($('#to-wheel'), { label: 'To', onChange: () => updateSummary() });
-  const currentService = () => services.find(s => s.id === fields.serviceId.value);
-  const unitMin = s => s && s.unit === 'hours' ? Math.round(s.step * 60) : S.STEP;
   function selectedPets() { return [...form.querySelectorAll('[name="petId"]:checked')].map(el => pets.find(p => p.id === el.value)); }
-  const opt = (o, extra = {}) => ({ value: o.min, label: o.label, disabled: !!o.reason, title: o.reason ? S.REASONS[o.reason] : '', ...extra });
-  function refreshFrom(want) {
-    const s = currentService(), date = fields.date.value; if (!s || !date) return;
-    const days = s.unit === 'days';
-    $('#nights-field').hidden = !days; toWheel.hide(days);
-    let starts = S.startOptions(ctxFor(date, editing, unitMin(s)));
-    // Overnight stays don't sit on the day grid: only the day being open and not-in-the-past matter.
-    if (days) starts = starts.map(o => ({ ...o, reason: o.reason === 'gap' || o.reason === 'overlap' ? null : o.reason }));
-    if (sheet.half) starts = starts.filter(o => sheet.half === 'am' ? o.min < 12 * 60 : o.min >= 12 * 60);
-    sheet.starts = starts;
-    fromWheel.set(starts.map(o => opt(o)), want ?? fromWheel.value);
-    refreshTo();
-  }
-  function refreshTo(want) {
-    const s = currentService(), date = fields.date.value, from = fromWheel.value;
-    if (!s || s.unit === 'days' || from == null) { sheet.ends = []; toWheel.set([], null); updateSummary(); return; }
-    const ends = S.endOptions(from, ctxFor(date, editing, unitMin(s)));
-    sheet.ends = ends;
-    toWheel.set(ends.map(o => opt(o)), want ?? toWheel.value ?? from + unitMin(s));
-    updateSummary();
-  }
-  function updateSummary() {
-    const s = currentService(); if (!s) return;
-    const ps = selectedPets(), from = fromWheel.value, to = toWheel.value, days = s.unit === 'days';
-    // Why anything is greyed — one short line, never who or what.
-    const greyed = [...(sheet.starts || []), ...(days ? [] : sheet.ends || [])].filter(o => o.reason).map(o => o.reason);
-    const why = [...new Set(greyed)].map(r => S.REASONS[r]);
-    $('#picker-reason').textContent = from == null ? (dayStatus(fields.date.value) ? 'Day unavailable' : 'No times left on this day — choose another date.') : why.length ? `Greyed times: ${why.join(' · ')}` : '';
-    const minutes = days ? null : (from != null && to != null ? to - from : null);
-    const units = days ? Number(fields.nights.value) : minutes != null ? minutes / 60 / s.step : null;
-    const extra = s.id === 'sitting' ? ps.slice().sort((a,b) => (b.species === 'Dog') - (a.species === 'Dog')).slice(1).reduce((n,p) => n + (p.species === 'Dog' ? 800 : p.species === 'Cat' ? 400 : 0),0) : s.extra * (s.id.startsWith('visit') ? ps.slice(1).filter(p => p.species !== 'Dog').length : Math.max(0,ps.length-1));
-    $('#picker-summary').textContent = days ? (from != null ? `From ${S.toHHMM(from)} · ${units} night${units === 1 ? '' : 's'}` : '') : (minutes ? `${S.toHHMM(from)}–${S.toHHMM(to)} · ${S.durationLabel(minutes)}` : '');
-    const valid = units > 0 && Number.isInteger(units);
-    $('#booking-cost').innerHTML = `<p>Service: ${money(s.rate)} per ${days ? 'night' : s.step === 0.5 ? '30 minutes' : 'hour'}</p><p>Extra pets: ${money(extra)} per ${days ? 'night' : s.step === 0.5 ? '30 minutes' : 'hour'}</p><strong>Estimated total ${valid && ps.length ? money((s.rate+extra)*units) : '—'}</strong>`;
-    $('#save-booking').disabled = busy || from == null || (!days && to == null);
-  }
   function openSheet(date, { half = null, b = null, copy = false } = {}) {
     if (busy) return;
     if ((!b || copy) && (dayStatus(date) || isPast(date))) { $('#calendar-status').textContent = 'That day can’t be booked. Choose another date.'; return; }
     editing = copy ? null : b?.id || null;
     editingVersion = editing ? b.version : null;
-    sheet = { half: editing ? null : half, base: b };
-    $('#booking-title').textContent = editing ? 'Edit appointment' : copy ? 'Repeat appointment' : `Book a time · ${half === 'pm' ? 'PM' : half === 'am' ? 'AM' : ''}`.replace(/ · $/, '');
+    const products = b ? productsOf(b) : [], overnight = half === 'night' || products[0] === 'sitting';
+    $('#booking-title').textContent = editing ? 'Edit booking' : copy ? 'Repeat booking' : overnight ? 'Book an overnight' : `Book a time · ${half === 'pm' ? 'PM' : 'AM'}`;
     $('#save-booking').textContent = editing ? 'Save changes for approval' : 'Request booking';
     $('#remove-booking').hidden = !editing; $('#remove-booking').textContent = 'Remove'; $('#remove-booking').dataset.confirm = '';
     $('#booking-error').textContent = '';
-    $('#pet-options').innerHTML = pets.map(p => `<label><input type="checkbox" name="petId" value="${esc(p.id)}" ${b?.petIds.includes(p.id) ? 'checked' : ''}><span>${esc(p.name)}</span></label>`).join('');
-    fields.serviceId.value = b?.serviceId || services[0].id; fields.date.value = date; fields.date.min = today;
-    fields.nights.value = b?.unit === 'days' ? b.duration : 1;
-    const want = b ? S.toMin(b.start || b.time) : undefined;
-    // A copied booking keeps its times only if they fit this box's half.
-    const fits = want != null && (!sheet.half || (sheet.half === 'am' ? want < 720 : want >= 720));
-    fromWheel.set([], null); refreshFrom(fits ? want : undefined);
-    if (b && b.end && fits) refreshTo(S.toMin(b.end));
+    $('#pet-options').innerHTML = pets.map(p => `<label><input type="checkbox" name="petId" value="${esc(p.id)}" ${b?.petIds.includes(p.id) ? 'checked' : ''}><span>${esc(p.name)} <small>(${esc(p.species)})</small></span></label>`).join('');
+    fields.date.value = date; fields.date.min = today;
+    // A copied daytime booking keeps its start if it fits the chosen half.
+    const start = b && !overnight ? b.start || b.time : null;
+    const keepStart = start && (!half || half === 'night' || (half === 'am' ? S.toMin(start) < 720 : S.toMin(start) >= 720)) ? start : null;
+    booker.setPets(selectedPets());
+    booker.open({ date, overnight, half: editing ? null : (overnight ? null : half), products, start: keepStart, excludeId: editing });
     if (dayDialog.open) dayDialog.close();
     dialog.showModal();
   }
-  function lock(value) { if (value) sync?.invalidate(); busy = value; for (const el of form.querySelectorAll('button,input,select')) el.disabled = value; if (!value) updateSummary(); }
+  function lock(value) { if (value) sync?.invalidate(); busy = value; for (const el of form.querySelectorAll('button,input,select')) el.disabled = value; if (!value) booker.refresh(); }
   form.addEventListener('change', e => {
-    if (e.target === fields.serviceId || e.target === fields.date) { if (fields.date.value && fields.date.value < today) fields.date.value = today; refreshFrom(); }
-    else updateSummary();
+    if (e.target.name === 'petId') booker.setPets(selectedPets());
+    if (e.target === fields.date) {
+      if (fields.date.value && fields.date.value < today) fields.date.value = today;
+      const st = booker.state;
+      booker.open({ date: fields.date.value, overnight: st.overnight, half: null, products: st.products, excludeId: editing });
+    }
   });
-  fields.nights.addEventListener('input', () => updateSummary());
   document.addEventListener('click', e => {
     const el = e.target.closest('button'); if (!el || busy) return;
     if (el.hasAttribute('data-dismiss')) dialog.close();
     if (el.hasAttribute('data-close-day')) dayDialog.close();
     if (el.dataset.edit) { const b = bookings.find(b => b.id === el.dataset.edit); if (b) openSheet(b.date, { b }); }
-    if (el.dataset.copy) { copyId = el.dataset.copy; render(); $('#calendar-status').textContent = 'Choose + on a day, then a morning or afternoon, to review your copied appointment.'; }
+    if (el.dataset.copy) { copyId = el.dataset.copy; render(); $('#calendar-status').textContent = 'Choose + on a day, then a time of day, to review your copied booking.'; }
     if (el.dataset.add) openDay(el.dataset.add);
     if (el.dataset.bookHalf) openSheet(dayDate, { half: el.dataset.bookHalf, b: copyId ? bookings.find(b => b.id === copyId) : null, copy: !!copyId });
   });
@@ -171,28 +155,26 @@
   $('#calendar-days').addEventListener('drop', e => { dragging = false; e.preventDefault(); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); const cell=e.target.closest('[data-date]'); if (!cell || isPast(cell.dataset.date)) return; copyId = e.dataTransfer.getData('application/x-palmers-booking'); render(); openDay(cell.dataset.date); });
   form.addEventListener('submit', async e => {
     e.preventDefault(); if (busy) return;
-    const petIds = selectedPets().map(p => p.id), s = currentService();
+    const petIds = selectedPets().map(p => p.id);
     if (!petIds.length) { $('#booking-error').textContent = 'Choose at least one pet.'; return; }
-    const from = fromWheel.value, to = toWheel.value;
-    const payload = s.unit === 'days'
-      ? { petIds, serviceId: s.id, date: fields.date.value, start: S.toHHMM(from), duration: Number(fields.nights.value), version: editingVersion }
-      : { petIds, serviceId: s.id, date: fields.date.value, start: S.toHHMM(from), end: S.toHHMM(to), version: editingVersion };
+    const v = booker.value(), problem = booker.problem();
+    if (!v || problem) { $('#booking-error').textContent = problem || 'Finish choosing your activities.'; return; }
     lock(true); $('#booking-error').textContent = '';
     try {
-      const {booking} = await api('/me/bookings' + (editing ? '/'+editing : ''),editing ? 'PATCH' : 'POST',payload);
+      const {booking} = await api('/me/bookings' + (editing ? '/'+editing : ''), editing ? 'PATCH' : 'POST', { petIds, ...v, version: editingVersion });
       bookings = bookings.filter(b => b.id !== booking.id).concat(booking); if (copyId && !editing) copyId = null; render(); dialog.close();
-      $('#calendar-status').textContent = 'Appointment saved to your account and awaiting admin approval.';
+      $('#calendar-status').textContent = 'Booking saved to your account and awaiting admin approval.';
     } catch (err) {
-      // Someone else just took it: refresh the day from the server's answer and let them choose again.
-      if (err.data?.taken) { applyUpdates(err.data, true); refreshFrom(); }
+      // Someone else just took it: refresh from the server's answer and let them choose again.
+      if (err.data?.taken) applyUpdates(err.data, true);
       $('#booking-error').textContent = err.message;
     } finally { lock(false); }
   });
   $('#remove-booking').onclick = async () => {
     if (busy || !editing) return;
-    const button = $('#remove-booking'); if (!button.dataset.confirm) { button.dataset.confirm = 'yes'; button.textContent = 'Confirm removal'; $('#booking-error').textContent = 'Remove this appointment? Other repeated appointments will stay.'; return; }
+    const button = $('#remove-booking'); if (!button.dataset.confirm) { button.dataset.confirm = 'yes'; button.textContent = 'Confirm removal'; $('#booking-error').textContent = 'Remove this booking? Other repeated bookings will stay.'; return; }
     lock(true);
-    try { await api('/me/bookings/'+editing,'DELETE'); bookings = bookings.filter(b => b.id !== editing); if (copyId === editing) copyId = null; render(); dialog.close(); $('#calendar-status').textContent = 'Appointment removed.'; }
+    try { await api('/me/bookings/'+editing,'DELETE'); bookings = bookings.filter(b => b.id !== editing); if (copyId === editing) copyId = null; render(); dialog.close(); $('#calendar-status').textContent = 'Booking removed.'; }
     catch(e) { $('#booking-error').textContent=e.message; } finally { lock(false); }
   };
   function applyUpdates(data, force = false) {
@@ -202,16 +184,15 @@
     bookings = data.bookings; availability = data.availability || []; services = data.services; busyTimes = data.busy || [];
     if (copyId && !bookings.some(b => b.id === copyId)) copyId = null;
     render();
-    // Keep the open sheet's choice but re-grey the wheels against the latest bookings.
-    if (dialog.open && !busy) { refreshFrom(); refreshTo(); }
+    // Keep the open sheet's choices but re-grey against the latest bookings.
+    if (dialog.open && !busy) booker.refresh();
     if (dialog.open && editing && bookings.find(b => b.id === editing)?.version !== editingVersion) {
-      $('#booking-error').textContent = 'This appointment has changed. Your draft is kept here; close and reopen it to use the latest saved details.';
+      $('#booking-error').textContent = 'This booking has changed. Your draft is kept here; close and reopen it to use the latest saved details.';
     }
   }
   (async function initialise() { try {
     const [account,data] = await Promise.all([api('/me'),api('/me/bookings')]); pets=account.pets; services=data.services; bookings=data.bookings; availability=data.availability || []; busyTimes = data.busy || []; today = data.today?.date || today;
     if (account.isAdmin) $('[data-admin-calendar-link]').hidden = false;
-    fields.serviceId.innerHTML=services.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
     $('#booking-content').hidden=false; $('#calendar-status').innerHTML=pets.length ? '' : 'Add a pet in <a href="account.html">your account</a> before booking.'; render();
     sync = window.calendarSync({read: signal => api('/me/bookings', 'GET', undefined, signal), apply: applyUpdates, paused: () => busy || dragging});
   } catch(e) { $('#calendar-status').textContent = 'Unable to load your calendar. '+e.message+' Retrying automatically…'; setTimeout(initialise, 5000); } })();

@@ -72,3 +72,47 @@
 .override-box{border:1.5px solid #e2c38f;background:#fbf5ea;border-radius:12px;padding:12px;margin-top:10px;font-size:14px}
 .override-box .pp-modal-actions{margin-top:8px}
 .warn-list{margin:8px 0;padding-left:18px;font-size:13px}
+
+/* ---- Activity booker ---- */
+.booker-modal{width:min(620px,94vw);max-height:92vh;overflow:auto}
+.half-boxes{grid-template-columns:repeat(3,minmax(0,1fr))}
+.night-box{background:#f5f3fa;border-color:#d9d1e8}
+.night-box h3{color:#3f3160}
+@media(max-width:760px){.half-boxes{grid-template-columns:1fr}}
+.booker-h{margin:18px 0 8px;font-size:16px}
+.booker-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.booker-line{border:1.5px solid #cbd8cf;border-radius:12px;padding:12px 14px;background:#fff}
+.booker-line.is-night{border-color:#b9acd3;background:#f5f3fa}
+.line-head{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;font-size:14px}
+.line-head small{color:#64766d}
+.line-price{margin-left:auto;font-weight:800;color:#23563e}
+.line-note{margin:6px 0 0;font-size:12.5px;color:#5b5172}
+.line-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.line-label{font-size:12px;font-weight:700;color:#64766d;text-transform:uppercase;letter-spacing:.04em}
+.line-btn{min-height:44px;min-width:76px;padding:6px 12px}
+.line-remove{margin-left:auto;color:#b42318}
+.booker-empty{font-size:13px;color:#64766d;padding:6px 0}
+.booker-add{margin-top:14px}
+.booker-add-label{font-weight:700;margin:0 0 8px}
+.booker-add-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.add-btn{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:48px;padding:8px 14px;border:1.5px dashed #80a995;border-radius:10px;background:#fff;color:#23563e;font:inherit;font-weight:700;cursor:pointer;text-align:left}
+.add-btn::before{content:'+';font-size:20px;line-height:1;margin-right:2px}
+.add-btn small{margin-left:auto;font-weight:600;color:#4c5f56}
+.add-btn:disabled{border-color:#d8d2ca;color:#b0a89f;cursor:not-allowed;background:#faf8f5}
+.add-btn:disabled small{color:#b0a89f}
+.add-btn.is-gap{border-color:#e2c38f;background:repeating-linear-gradient(135deg,#fff 0 6px,#fbf5ea 6px 12px)}
+.add-btn:focus-visible,.line-btn:focus-visible{outline:3px solid #633f85;outline-offset:2px}
+.booker-night{border:1.5px solid #b9acd3;border-radius:12px;padding:12px 14px;background:#f5f3fa}
+.night-base{margin:0 0 10px;font-size:14px;color:#3f3160}
+.booker-night label{display:block;font-weight:700}
+.booker-night select{display:block;width:100%;min-height:44px;margin-top:6px}
+.night-fill{margin:10px 0 0;font-size:14px;font-weight:700}
+.night-fill.is-todo{color:#8a5a1f}.night-fill.is-done{color:#237a3b}
+.booker.is-locked .line-actions,.booker.is-locked .booker-add{display:none}
+.mode-options{border:0;padding:0;margin:8px 0 0}.mode-options legend{font-weight:700}
+.mode-options label{display:inline-block;margin:6px 8px 0 0;cursor:pointer;position:relative}
+.mode-options input{position:absolute;opacity:0}
+.mode-options span{display:block;border:1.5px solid #cbd8cf;border-radius:30px;padding:10px 16px}
+.mode-options input:checked+span{background:#e8f1e9;border-color:#37745a;color:#23563e}
+.mode-options input:focus-visible+span{outline:3px solid #8d7daa;outline-offset:3px}
+@media(max-width:480px){.booker-add-buttons{grid-template-columns:1fr}}
