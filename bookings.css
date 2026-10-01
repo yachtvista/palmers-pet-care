@@ -7,3 +7,68 @@
 /* Keep the wording as well as colour so approval state is accessible. */
 .booking-state.is-pending,.repeat-card .booking-state.is-pending{color:#b42318}
 .booking-state.is-approved,.repeat-card .booking-state.is-approved{color:#237a3b}
+
+/* ---- Past dates: discoloured, never bookable ---- */
+.calendar-day.is-past{background:repeating-linear-gradient(135deg,#f1efea 0 6px,#ebe8e1 6px 12px)}
+.calendar-day.is-past time{color:#a39c94}
+.calendar-day.is-past .calendar-event{opacity:.6}
+.calendar-day.is-past .calendar-add{border-style:dashed;color:#a39c94;border-color:#cfc8c0;font-size:11px}
+.admin-calendar-day.is-past{background:repeating-linear-gradient(135deg,#f1efea 0 6px,#ebe8e1 6px 12px)}
+.admin-calendar-day.is-past time{color:#a39c94}
+
+/* ---- Day view: AM / PM boxes ---- */
+.day-modal{width:min(640px,94vw)}
+.half-boxes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.half-box{border:1.5px solid #dce5df;border-radius:14px;padding:14px;min-width:0}
+.half-box h3{margin:0 0 10px;font-size:18px}.half-box h3 small{font-size:12px;color:#64766d;font-weight:600}
+.half-item{display:block;width:100%;text-align:left;font:inherit;font-size:13px;border-radius:9px;padding:9px 10px;margin:0 0 8px;min-height:44px;overflow-wrap:anywhere}
+.half-item.is-mine{border:1.5px solid #8d7daa;color:#5e487b;background:#fff;cursor:pointer}
+.half-item.is-mine small{display:block;margin-top:3px}
+.half-item.is-taken{border:1px dashed #c9c2b9;color:#7d756d;background:#f6f4f0}
+.half-add{display:block;width:100%;min-height:48px;border:1.5px solid #80a995;border-radius:10px;background:transparent;color:#39785d;font-size:26px;cursor:pointer}
+.half-add:focus-visible,.half-item.is-mine:focus-visible{outline:3px solid #633f85;outline-offset:2px}
+.half-closed{margin:6px 0 0;padding:12px;border-radius:10px;background:#f1efea;color:#78686c;font-weight:700;text-align:center}
+.half-empty{font-size:13px;color:#64766d}
+@media(max-width:600px){.half-boxes{grid-template-columns:1fr}}
+
+/* ---- Drum / rolodex time picker ---- */
+.time-picker{display:flex;gap:14px;align-items:flex-start}
+.wheel{flex:1;min-width:0;position:relative}
+.wheel-label{display:block;font-weight:700;margin-bottom:6px}
+.wheel-window{position:relative;height:220px;border:1.5px solid #cbd8cf;border-radius:14px;overflow:hidden;background:#fff}
+.wheel-track{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;padding:88px 0;box-sizing:border-box;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.wheel-track::-webkit-scrollbar{display:none}
+.wheel-row{height:44px;line-height:44px;text-align:center;scroll-snap-align:center;font-size:19px;font-variant-numeric:tabular-nums;color:#33463d;cursor:pointer;user-select:none}
+.wheel-row.is-selected{font-weight:800;color:#23563e}
+.wheel-row.is-disabled{color:#c3bcb4;text-decoration:line-through;text-decoration-thickness:1px;cursor:not-allowed}
+.wheel-row.is-gap{color:#b07a2a;background:repeating-linear-gradient(135deg,transparent 0 6px,#f7ecd9 6px 12px)}
+.wheel-lens{position:absolute;left:6px;right:6px;top:88px;height:44px;border-top:1.5px solid #80a995;border-bottom:1.5px solid #80a995;border-radius:8px;background:rgba(232,241,233,.35);pointer-events:none}
+.wheel-window::before,.wheel-window::after{content:'';position:absolute;left:0;right:0;height:70px;pointer-events:none;z-index:1}
+.wheel-window::before{top:0;background:linear-gradient(#fff,rgba(255,255,255,0))}
+.wheel-window::after{bottom:0;background:linear-gradient(rgba(255,255,255,0),#fff)}
+.wheel:focus-within .wheel-window{outline:3px solid #633f85;outline-offset:2px}
+.wheel-native{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.wheel.is-off{opacity:.5}
+.picker-reason{font-size:13px;color:#8a5a1f;min-height:1.3em;margin:8px 0 0}
+.picker-summary{font-size:15px;font-weight:700;color:#23563e;margin:4px 0 10px}
+#nights-field{flex:1}
+
+/* ---- Admin day timeline (30-minute grid) ---- */
+.day-grid{position:relative;margin:14px 0 18px;border:1px solid #dce5df;border-radius:12px;background:#fff;padding-left:58px}
+.day-grid .slot{height:28px;border-top:1px solid #eef2ee;position:relative}
+.day-grid .slot:first-child{border-top:0}
+.day-grid .slot.on-hour{border-top-color:#dce5df}
+.day-grid .slot span{position:absolute;left:-52px;top:-8px;font-size:11px;color:#64766d;font-variant-numeric:tabular-nums}
+.day-grid .gap-band{position:absolute;left:58px;right:6px;background:repeating-linear-gradient(135deg,#f7ecd9 0 6px,#fbf5ea 6px 12px);border-left:3px solid #e2c38f;font-size:10px;color:#9b6a22;padding-left:6px;overflow:hidden}
+.day-grid .block{position:absolute;left:64px;right:12px;border-radius:8px;padding:4px 8px;font-size:12px;line-height:1.35;overflow:hidden;border:1.5px solid #8d7daa;background:#f5f1fa;color:#4a3766;cursor:pointer;text-align:left;font-family:inherit}
+.day-grid .block.is-approved{border-color:#5b9a6f;background:#eaf5ec;color:#1f5a33}
+.day-grid .block.is-pending{border-color:#d08a7f;background:#fbefec;color:#8a2e22}
+.day-grid .block strong{display:block}
+.day-grid .block:focus-visible{outline:3px solid #633f85;outline-offset:1px}
+.day-grid.is-closed{background:repeating-linear-gradient(135deg,#f1efea 0 8px,#ebe8e1 8px 16px)}
+.grid-legend{font-size:12px;color:#64766d;display:flex;gap:14px;flex-wrap:wrap}
+.grid-legend i{display:inline-block;width:14px;height:10px;vertical-align:middle;margin-right:4px;border-radius:2px}
+.day-banner{border:1px solid #c9c2b9;border-radius:10px;padding:10px 12px;font-size:13px;margin:8px 0;background:#f6f4f0}
+.override-box{border:1.5px solid #e2c38f;background:#fbf5ea;border-radius:12px;padding:12px;margin-top:10px;font-size:14px}
+.override-box .pp-modal-actions{margin-top:8px}
+.warn-list{margin:8px 0;padding-left:18px;font-size:13px}
