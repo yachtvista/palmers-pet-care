@@ -1,0 +1,13 @@
+.pp-user-directory { margin: 0 0 2rem; }
+[data-portal="admin"] .pp-main { min-width: 0; }
+.pp-user-directory h2 { margin: 0 0 .75rem; font-size: 1.3rem; }
+.pp-user-table-wrap { overflow-x: auto; border: 1px solid var(--pp-line, #dce1ea); border-radius: 12px; background: #fff; }
+.pp-user-table { width: 100%; border-collapse: collapse; text-align: left; }
+.pp-user-table th, .pp-user-table td { padding: .85rem 1rem; border-bottom: 1px solid var(--pp-line, #dce1ea); vertical-align: top; }
+.pp-user-table thead { background: #f3f5f8; }
+.pp-user-table tbody th { font-weight: 600; }
+.pp-user-table tbody tr:last-child > * { border-bottom: 0; }
+.pp-user-table a { overflow-wrap: anywhere; }
+.pp-user-caption { padding: .75rem 1rem; text-align: left; color: #526079; }
+[data-customer] { scroll-margin-top: 1rem; }
+@media (max-width: 600px) { .pp-user-table th, .pp-user-table td { padding: .65rem; } .pp-user-table { min-width: 540px; } }
