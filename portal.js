@@ -435,7 +435,12 @@
     (async () => {
       let d;
       try { d = await api('/admin/customers'); }
-      catch (err) { location.href = err.status === 403 ? 'account.html' : 'login.html'; return; }
+      catch (err) {
+        if (err.status === 401 || err.status === 403) { location.href = err.status === 403 ? 'account.html' : 'login.html'; return; }
+        $('[data-count]').textContent = 'Unable to load users';
+        $('[data-customers]').innerHTML = '<p class="pp-empty" role="alert">The registered-user list could not load. Please refresh to try again.</p>';
+        return;
+      }
       const extras = new Map(); // petId → { photos, entries }
       $('[data-count]').textContent = d.count + (d.count === 1 ? ' customer' : ' customers');
       const petBlock = (p) => {
@@ -465,17 +470,26 @@
           ${c.pets.map(petBlock).join('') || '<p class="pp-empty">No pet on record.</p>'}
         </section>`;
       const host = $('[data-customers]');
+      const stylesheet = document.createElement('link');
+      stylesheet.rel = 'stylesheet'; stylesheet.href = 'admin-users.css'; document.head.append(stylesheet);
+      const directory = document.createElement('section');
+      directory.className = 'pp-user-directory';
+      directory.setAttribute('aria-label', 'Registered users');
+      host.before(directory);
       let query = '';
       const render = () => {
         const needle = query.trim().toLowerCase();
         const rows = d.customers.filter((c) => !needle || [c.name, c.email, c.phone, ...c.pets.map((p) => p.name + ' ' + p.species)].join(' ').toLowerCase().includes(needle));
+        $('[data-count]').textContent = (needle ? rows.length + ' of ' : '') + d.customers.length + (d.customers.length === 1 ? ' registered user' : ' registered users');
+        directory.innerHTML = `<h2>Registered users</h2><div class="pp-user-table-wrap"><table class="pp-user-table"><caption class="pp-user-caption">${needle ? 'Users matching your search' : 'All registered users, including those without pets'}</caption><thead><tr><th scope="col">Name</th><th scope="col">Email address</th><th scope="col">Pets</th><th scope="col">Details</th></tr></thead><tbody>${rows.map((c, i) => `<tr><th scope="row">${esc(c.name || 'Name not provided')}</th><td>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : 'Email not provided'}</td><td>${c.pets.length ? c.pets.map((p) => `${esc(p.name)}${p.species ? ' (' + esc(p.species) + ')' : ''}`).join('<br>') : 'No pets registered'}</td><td><a href="#registered-user-${i}" aria-label="View details for ${esc(c.name || c.email)}">View details</a></td></tr>`).join('') || `<tr><td colspan="4">${needle ? 'No users match your search.' : 'No registered users yet.'}</td></tr>`}</tbody></table></div>`;
         host.innerHTML = rows.map(customerCard).join('') || '<p class="pp-empty">No customers match.</p>';
+        host.querySelectorAll('[data-customer]').forEach((card, i) => { card.id = 'registered-user-' + i; });
       };
       render();
+      $('[data-search]').addEventListener('input', (e) => { query = e.target.value; render(); });
       // Photos and diary for every pet, loaded after the first paint.
       await Promise.all(d.customers.flatMap((c) => c.pets).map(async (p) => { try { extras.set(p.id, await loadPetExtras(p.id)); } catch (e) { extras.set(p.id, { photos: [], entries: [] }); } }));
       render();
-      $('[data-search]').addEventListener('input', (e) => { query = e.target.value; render(); });
       const setStatus = (petId, text, kind) => { const el = host.querySelector(`[data-status="${petId}"]`); if (el) { el.textContent = text; el.className = 'pp-status' + (kind ? ' ' + kind : ''); } };
       const refreshPet = async (petId) => { extras.set(petId, await loadPetExtras(petId)); render(); };
       host.addEventListener('change', async (e) => {
