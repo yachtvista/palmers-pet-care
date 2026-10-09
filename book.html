@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book a visit | Palmer’s Pet Care</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="images/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="home-booker.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body class="hb-page">
+  <header class="hb-top">
+    <div class="hb-wrap hb-top-inner">
+      <a class="brand" href="index.html">
+        <img src="images/logo.png" alt="Palmer’s Pet Care">
+        <span><strong>Palmer’s Pet Care</strong><small>Selsey</small></span>
+      </a>
+      <button class="hb-menu" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><span></span><span></span><span></span></button>
+      <nav class="hb-nav" id="site-nav">
+        <a href="index.html">Home</a>
+        <a href="index.html#services">Services</a>
+        <a href="index.html#prices">Prices</a>
+        <a href="index.html#gallery">Happy faces</a>
+        <a class="hb-login" href="login.html?next=book.html" id="bkLoginTop">Log in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="hb-onb">
+    <div class="hb-wrap hb-onb-grid">
+      <div>
+        <!-- No slot chosen yet -->
+        <div class="hb-card" data-view="empty" hidden>
+          <h2>Choose a visit first</h2>
+          <p class="hb-sub">Pick a service, day and time on the homepage — we’ll keep it with you while you sign up.</p>
+          <div class="hb-row"><a class="hb-cta" href="index.html">Choose a visit</a></div>
+        </div>
+
+        <!-- Step 2a: account -->
+        <form class="hb-card" data-view="account" id="bkAccount" hidden autocomplete="on" novalidate>
+          <div class="hb-steps" data-step="2"></div>
+          <h2>Create your account</h2>
+          <p class="hb-sub">So we can keep in touch about this visit and any you book later.</p>
+          <div class="hb-form">
+            <div class="hb-f"><label for="bkFirst">First name</label><input id="bkFirst" name="first" autocomplete="given-name" required maxlength="60"></div>
+            <div class="hb-f"><label for="bkLast">Last name</label><input id="bkLast" name="last" autocomplete="family-name" required maxlength="60"></div>
+            <div class="hb-f"><label for="bkEmail">Email</label><input id="bkEmail" name="email" type="email" autocomplete="email" required></div>
+            <div class="hb-f"><label for="bkPhone">Mobile</label><input id="bkPhone" name="phone" type="tel" autocomplete="tel" required></div>
+            <div class="hb-f full"><label for="bkAddr">Home address</label><input id="bkAddr" name="address" autocomplete="street-address" required maxlength="240" placeholder="House number and street, Selsey"><small>Where the visit happens.</small></div>
+            <div class="hb-f"><label for="bkPc">Postcode</label><input id="bkPc" name="postcode" autocomplete="postal-code" required maxlength="10"></div>
+            <div></div>
+            <div class="hb-f"><label for="bkPw">Password</label><input id="bkPw" name="password" type="password" autocomplete="new-password" minlength="8" required><small>At least 8 characters.</small></div>
+            <div class="hb-f"><label for="bkPw2">Confirm password</label><input id="bkPw2" name="confirm" type="password" autocomplete="new-password" minlength="8" required></div>
+            <div class="hb-f full"><div class="cf-turnstile" data-sitekey="0x4AAAAAAFBkjgY6kZIkYVRL" data-theme="light"></div></div>
+          </div>
+          <p class="hb-note err" data-status hidden role="alert"></p>
+          <div class="hb-row"><button class="hb-cta" type="submit">Create account &amp; continue</button><span style="color:var(--hb-muted);font-size:.9rem">Already a customer? <a class="hb-link" href="login.html?next=book.html">Log in</a></span></div>
+          <p class="hb-f" style="margin-top:1rem"><small>Your details are kept privately for Palmer’s Pet Care and never shared. See the <a href="privacy.html">privacy notice</a>.</small></p>
+        </form>
+
+        <!-- Step 2b: pets (and any missing contact details for an existing customer) -->
+        <form class="hb-card" data-view="pets" id="bkPets" hidden novalidate>
+          <div class="hb-steps" data-step="2"></div>
+          <h2>Tell us about your pets</h2>
+          <p class="hb-sub" id="bkPetsSub">The more we know, the better the care.</p>
+          <div id="bkDetails" hidden>
+            <p style="margin-top:1.2rem;color:var(--hb-navy);font-weight:700">Your contact details</p>
+            <div class="hb-form" style="margin-top:.6rem">
+              <div class="hb-f"><label for="bkDPhone">Mobile</label><input id="bkDPhone" type="tel" autocomplete="tel"></div>
+              <div class="hb-f"><label for="bkDPc">Postcode</label><input id="bkDPc" autocomplete="postal-code" maxlength="10"></div>
+              <div class="hb-f full"><label for="bkDAddr">Home address</label><input id="bkDAddr" autocomplete="street-address" maxlength="300"></div>
+            </div>
+          </div>
+          <div id="bkExisting"></div>
+          <div id="bkNewPets"></div>
+          <button class="hb-link" type="button" id="bkAddPet" style="margin-top:1rem">+ Add a pet</button>
+          <p class="hb-note err" data-status hidden role="alert"></p>
+          <div class="hb-row"><button class="hb-cta" type="submit">Save &amp; review</button><a class="hb-link" href="index.html">Change visit</a></div>
+        </form>
+
+        <!-- Step 3: review & request -->
+        <div class="hb-card" data-view="review" hidden>
+          <div class="hb-steps" data-step="3"></div>
+          <h2>Review your booking</h2>
+          <p class="hb-sub" id="bkFresh">Checking the diary…</p>
+          <div class="hb-alert" id="bkTaken" hidden><b>That time is no longer free.</b> <span id="bkTakenText">Nearest free times the same day:</span><div class="alts" id="bkAlts"></div></div>
+          <div class="hb-review" id="bkReview"></div>
+          <label class="hb-check"><input type="checkbox" id="bkAgree"> <span>I understand this is a request: it’s confirmed once approved, and new clients have a free meet and greet before the first visit. I’ve read the <a href="terms.html" target="_blank">terms</a>.</span></label>
+          <p class="hb-note err" data-status hidden role="alert"></p>
+          <div class="hb-row"><button class="hb-cta" type="button" id="bkSend" disabled>Send booking request</button><button class="hb-link" type="button" id="bkBack">Back to pets</button></div>
+        </div>
+
+        <!-- Sent -->
+        <div class="hb-card" data-view="done" hidden>
+          <div class="hb-done">
+            <div class="tick" aria-hidden="true">✓</div>
+            <h2>Request sent</h2>
+            <p id="bkDoneLine"></p>
+            <div class="hb-next">
+              <div><span class="dot">1</span><span><b>We review your request</b>You’ll get an email as soon as it’s approved.</span></div>
+              <div><span class="dot">2</span><span><b>Free meet and greet</b>Once approved, we’ll arrange a time to meet you and your pets at home.</span></div>
+              <div><span class="dot">3</span><span><b>First visit</b>It’s in your calendar — change or cancel it from there.</span></div>
+            </div>
+            <div class="hb-row" style="justify-content:center"><a class="hb-cta" href="bookings.html">See my calendar</a><a class="hb-link" href="account.html">My account</a></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="hb-slot" id="bkSlot" hidden>
+        <div class="hb-card">
+          <h3><i></i>Your slot is saved</h3>
+          <dl id="bkSlotDl"></dl>
+          <div class="total"><span>Price</span><span id="bkSlotPrice">—</span></div>
+          <p class="keep">Saved on this device — leave and come back any time. It becomes a request once your details are complete and you send it.</p>
+          <a class="hb-link" href="index.html">Change visit</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <p>Palmer’s Pet Care · East Street and Seal Bay, Selsey · <a href="mailto:enquiries@palmerspetcare.co.uk">enquiries@palmerspetcare.co.uk</a></p>
+      <p><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="contact.html">Contact</a></p>
+    </div>
+  </footer>
+  <script src="booking-slots.js"></script>
+  <script src="home-booker.js"></script>
+  <script src="book.js"></script>
+</body>
+</html>

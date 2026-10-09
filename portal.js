@@ -109,7 +109,9 @@
       status(login, 'Signing in…');
       try {
         const r = await api('/login', { method: 'POST', body: { email: login.email.value, password: login.password.value, turnstile: token } });
-        location.href = r.isAdmin ? 'admin.html' : 'account.html';
+        // Coming from the homepage booking flow (login.html?next=book.html): carry on with the saved slot.
+        const next = new URLSearchParams(location.search).get('next');
+        location.href = r.isAdmin ? 'admin.html' : next === 'book.html' ? 'book.html' : 'account.html';
       } catch (err) { status(login, err.message, 'error'); btn.disabled = false; if (window.turnstile) try { window.turnstile.reset(); } catch (x) { /* no widget */ } }
     });
   }
