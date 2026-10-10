@@ -204,3 +204,15 @@ body.hb-page { background: var(--hb-bg); }
 }
 
 .hb-page .local-nav-wrap { margin-top: 1.6rem; }
+
+/* Trust tiles (Meet and greet first · Fully Insured · DBS Checked · On foot): a border that moves
+   1 → 2 → 3 → 4 and repeats, 2.5 s on each tile (10 s cycle, each tile offset by 2.5 s). */
+.hb-page .trust div { border: 2px solid transparent; animation: hb-trust-cycle 10s linear infinite; }
+.hb-page .trust div:nth-child(2) { animation-delay: 2.5s; }
+.hb-page .trust div:nth-child(3) { animation-delay: 5s; }
+.hb-page .trust div:nth-child(4) { animation-delay: 7.5s; }
+@keyframes hb-trust-cycle {
+  0%, 24.99% { border-color: var(--hb-green); }
+  25%, 100% { border-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .hb-page .trust div { animation: none; } }
