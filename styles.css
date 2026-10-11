@@ -337,8 +337,16 @@ body h1, body h2, body h3, body .brand strong, body .banner h1, body .page-head 
 
 /* Navigation is intentionally a burger at every viewport size. */
 .topbar-inner { position: relative; }
-.topbar .brand img { width: 68px; height: 68px; margin: 5px 0; border-radius: 50%; }
+.topbar .brand img { width: 85px; height: 85px; flex-shrink: 0; margin: 5px 0; border-radius: 50%; }
 .header-actions, .topbar-inner > .customer-login { margin-left: auto; }
+@media (max-width: 360px) {
+  .topbar-inner { gap: .5rem; }
+  .topbar .brand { min-width: 0; gap: .5rem; }
+  .topbar .brand > span { min-width: 0; }
+  .topbar .brand strong { font-size: .85rem; }
+  .topbar .customer-login { width: 64px; flex-shrink: 0; white-space: normal; text-align: center; font-size: .65rem; letter-spacing: .03em; }
+}
+
 .customer-login { color: var(--navy); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; white-space: nowrap; }
 .topbar nav { position: absolute; z-index: 10; top: calc(100% + 1px); right: 0; display: none; min-width: 220px; padding: .65rem 1rem 1rem; background: #fff; border: 1px solid var(--line); border-top: 0; box-shadow: 0 12px 24px rgba(18,36,60,.1); }
 body.menu-open .topbar nav { display: block; }
