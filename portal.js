@@ -116,6 +116,48 @@
     });
   }
 
+  // ----- Forgotten password: email a one-time reset link -----
+  // The answer is the same whether or not the address has an account (the API never says).
+  const forgot = $('[data-account-form="forgot"]');
+  if (forgot) {
+    watchTurnstile(forgot);
+    forgot.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('button[type="submit"]', forgot); btn.disabled = true;
+      let token = turnstileToken(forgot);
+      if (!token && hasTurnstile(forgot)) { status(forgot, 'Just checking you’re human…'); token = await turnstileReady(forgot); }
+      if (!token && hasTurnstile(forgot)) { status(forgot, securityCheckFailed, 'error'); btn.disabled = false; return; }
+      status(forgot, 'Sending…');
+      try {
+        await api('/password-reset', { method: 'POST', body: { email: forgot.email.value, turnstile: token } });
+        status(forgot, 'If that address has an account, we’ve emailed it a link to choose a new password. It works for 60 minutes — check your junk folder if it hasn’t arrived in a few minutes.', 'ok');
+      } catch (err) { status(forgot, err.message, 'error'); btn.disabled = false; if (window.turnstile) try { window.turnstile.reset(); } catch (x) { /* no widget */ } }
+    });
+  }
+
+  // ----- Reset password: the link's token is in the URL fragment (never sent to the web server) -----
+  const reset = $('[data-account-form="reset"]');
+  if (reset) {
+    const resetToken = new URLSearchParams(location.hash.slice(1)).get('token') || '';
+    if (!resetToken) { status(reset, 'This page needs the link from your reset email. Ask for a new one on the forgotten-password page.', 'error'); $('button[type="submit"]', reset).disabled = true; }
+    reset.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (reset.password.value !== reset.confirm.value) { status(reset, 'The two passwords don’t match.', 'error'); reset.confirm.focus(); return; }
+      const btn = $('button[type="submit"]', reset); btn.disabled = true;
+      status(reset, 'Saving…');
+      try {
+        await api('/password-reset/confirm', { method: 'POST', body: { token: resetToken, password: reset.password.value } });
+        history.replaceState(null, '', location.pathname); // the link is spent; drop it from the address bar
+        reset.innerHTML = '<p class="form-status ok" role="status">Your password has been changed.</p><a class="btn" href="login.html" style="display:block;text-align:center">Sign in</a>';
+      } catch (err) {
+        const expired = /expired|already been used/.test(err.message);
+        status(reset, err.message, 'error');
+        if (expired) reset.insertAdjacentHTML('beforeend', '<p class="account-switch"><a href="forgot-password.html">Email me a new link</a></p>');
+        else btn.disabled = false;
+      }
+    });
+  }
+
   // ----- Shared portal chrome -----
   // On a phone the account sidebar becomes a slim bar with a burger, like the public site's menu,
   // instead of stacking every link down the screen. Built here so no page markup has to change.
