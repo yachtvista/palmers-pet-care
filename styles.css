@@ -301,6 +301,16 @@ footer a { color: var(--beige); text-decoration: none; }
 .menu-toggle span { display: block; width: 1.25rem; height: 2px; margin: 3px auto; background: var(--navy); }
 .menu-toggle b { display: block; margin-top: 2px; font-size: .62rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .back-link { color: var(--navy); font-size: .88rem; font-weight: 600; text-decoration: none; }
+
+/* Icon-only burger + full-width rounded nav card on account pages (login,
+   forgot-password, register), matching the newer homepage/booking-flow nav
+   style. Scoped to .account-page only — about.html/contact.html keep their
+   existing small top-right dropdown. */
+.account-page .menu-toggle b { display: none; }
+.account-page .menu-toggle { padding: .6rem .75rem; }
+.account-page .topbar nav { left: 1rem; right: 1rem; min-width: 0; border: 0; border-radius: 14px; padding: .6rem; }
+.account-page .topbar nav a { display: block; padding: .75rem .9rem; border-radius: 10px; }
+.account-page .topbar nav a:hover { background: var(--cream); opacity: 1; }
 .account-page { min-height: 100vh; display: flex; flex-direction: column; background: var(--cream); }
 .account-page footer { margin-top: auto; width: 100%; }
 .account-shell { flex: 1; display: grid; place-items: center; padding: 3.5rem 1rem; }
