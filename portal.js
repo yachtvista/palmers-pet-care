@@ -67,6 +67,18 @@
     return (yr && mn) ? yr + ' ' + mn : (yr || mn || 'Under a month old');
   }
   const petAge = (p) => ageFromDob(p.dateOfBirth) || p.age || '';
+  function birthDate(dob) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob || '');
+    if (!match || +match[1] < 1) return null;
+    const date = new Date(dob + 'T12:00:00Z');
+    if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dob || dob > todayISO()) return null;
+    return { date, year: +match[1], month: +match[2], day: +match[3] };
+  }
+  const birthDateText = (dob) => {
+    const birth = birthDate(dob);
+    return birth ? new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' }).format(birth.date) : 'Not provided';
+  };
+
 
   const careRows = (p) => {
     const rows = [['Breed', p.breed], ['Dietary requirements', p.diet], ['Medication', medicationText(p)], ['Likes', p.likes], ['Dislikes', p.dislikes]].filter((r) => r[1]);
@@ -492,6 +504,7 @@
         return `
         <article class="pp-card pp-pet" data-pet="${esc(p.id)}">
           <div class="pp-card-head">${p.profilePhotoUrl ? `<img class="pp-avatar" src="${imgUrl(p.profilePhotoUrl)}" alt="">` : `<span class="pp-avatar" aria-hidden="true">${esc((p.name || '?').slice(0, 1).toUpperCase())}</span>`}<div><h3>${esc(p.name)}</h3><p class="pp-sub">${esc(p.species)} · ${esc(petAge(p) || 'age not given')}</p></div></div>
+          <dl class="pp-care"><div><dt>Date of birth</dt><dd>${birthDate(p.dateOfBirth) ? `<time datetime="${esc(p.dateOfBirth)}">${esc(birthDateText(p.dateOfBirth))}</time>` : 'Not provided'}</dd></div></dl>
           ${p.notes ? `<p class="pp-notes">${esc(p.notes)}</p>` : ''}
           ${careRows(p)}
           <div class="pp-tools">
@@ -515,21 +528,47 @@
         </section>`;
       const host = $('[data-customers]');
       const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet'; stylesheet.href = 'admin-users.css'; document.head.append(stylesheet);
+      stylesheet.rel = 'stylesheet'; stylesheet.href = 'admin-users.css?v=20261030-birthdays'; document.head.append(stylesheet);
       const directory = document.createElement('section');
       directory.className = 'pp-user-directory';
       directory.setAttribute('aria-label', 'Registered users');
       host.before(directory);
+      const birthdays = document.createElement('section');
+      birthdays.className = 'pp-birthdays';
+      birthdays.setAttribute('aria-labelledby', 'birthdays-heading');
+      document.querySelector('.pp-toolbar').before(birthdays);
+      const renderBirthdays = () => {
+        const [year, month, day] = todayISO().split('-').map(Number);
+        const monthName = new Intl.DateTimeFormat('en-GB', { month: 'long', timeZone: 'Europe/London' }).format(new Date());
+        const rows = d.customers.flatMap((owner) => owner.pets.map((pet) => ({ owner, pet, birth: birthDate(pet.dateOfBirth) })))
+          .filter(({ birth }) => birth && birth.month === month)
+          .sort((a, b) => a.birth.day - b.birth.day || a.pet.name.localeCompare(b.pet.name));
+        birthdays.innerHTML = `<div class="pp-birthday-heading"><div><p class="pp-eyebrow">${esc(monthName)} ${year}</p><h2 id="birthdays-heading">Birthdays this month</h2></div><span class="pp-count">${rows.length} ${rows.length === 1 ? 'birthday' : 'birthdays'}</span></div>
+          ${rows.length ? `<ul class="pp-birthday-list">${rows.map(({ owner, pet, birth }) => {
+            const age = year - birth.year;
+            const status = birth.day === day ? 'Today' : birth.day < day ? 'Earlier this month' : 'Coming up';
+            return `<li class="pp-birthday-item${birth.day === day ? ' is-today' : ''}"><div class="pp-birthday-date"><strong>${birth.day}</strong><span>${esc(monthName)}</span></div><div class="pp-birthday-details"><h3>${esc(pet.name)}</h3><p>${esc(pet.species || 'Pet')} · ${age ? `Turns ${age} ${age === 1 ? 'year' : 'years'} old` : 'Born this month'}</p><p>Owner: ${esc(owner.name || owner.email || 'Not provided')}</p></div><div class="pp-birthday-action"><span class="pp-birthday-status">${status}</span><button class="pp-btn ghost" type="button" data-birthday-pet="${esc(pet.id)}">View pet</button></div></li>`;
+          }).join('')}</ul>` : '<p class="pp-empty">No pets with a recorded birthday this month.</p>'}`;
+      };
+      renderBirthdays();
+      // Refresh month/today labels when returning to an admin tab left open overnight.
+      window.addEventListener('focus', renderBirthdays);
       let query = '';
       const render = () => {
         const needle = query.trim().toLowerCase();
         const rows = d.customers.filter((c) => !needle || [c.name, c.email, c.phone, ...c.pets.map((p) => p.name + ' ' + p.species)].join(' ').toLowerCase().includes(needle));
         $('[data-count]').textContent = (needle ? rows.length + ' of ' : '') + d.customers.length + (d.customers.length === 1 ? ' registered user' : ' registered users');
-        directory.innerHTML = `<h2>Registered users</h2><div class="pp-user-table-wrap"><table class="pp-user-table"><caption class="pp-user-caption">${needle ? 'Users matching your search' : 'All registered users, including those without pets'}</caption><thead><tr><th scope="col">Name</th><th scope="col">Email address</th><th scope="col">Pets</th><th scope="col">Details</th></tr></thead><tbody>${rows.map((c, i) => `<tr><th scope="row">${esc(c.name || 'Name not provided')}</th><td>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : 'Email not provided'}</td><td>${c.pets.length ? c.pets.map((p) => `${esc(p.name)}${p.species ? ' (' + esc(p.species) + ')' : ''}`).join('<br>') : 'No pets registered'}</td><td><a href="#registered-user-${i}" aria-label="View details for ${esc(c.name || c.email)}">View details</a></td></tr>`).join('') || `<tr><td colspan="4">${needle ? 'No users match your search.' : 'No registered users yet.'}</td></tr>`}</tbody></table></div>`;
+        directory.innerHTML = `<h2>Registered users</h2><div class="pp-user-table-wrap"><table class="pp-user-table"><caption class="pp-user-caption">${needle ? 'Users matching your search' : 'All registered users, including those without pets'}</caption><thead><tr><th scope="col">Name</th><th scope="col">Email address</th><th scope="col">Pets</th><th scope="col">Details</th></tr></thead><tbody>${rows.map((c, i) => `<tr><th scope="row">${esc(c.name || 'Name not provided')}</th><td>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : 'Email not provided'}</td><td>${c.pets.length ? c.pets.map((p) => `${esc(p.name)}${p.species ? ' (' + esc(p.species) + ')' : ''}<small class="pp-pet-dob">Date of birth: ${esc(birthDateText(p.dateOfBirth))}</small>`).join('<br>') : 'No pets registered'}</td><td><a href="#registered-user-${i}" aria-label="View details for ${esc(c.name || c.email)}">View details</a></td></tr>`).join('') || `<tr><td colspan="4">${needle ? 'No users match your search.' : 'No registered users yet.'}</td></tr>`}</tbody></table></div>`;
         host.innerHTML = rows.map(customerCard).join('') || '<p class="pp-empty">No customers match.</p>';
         host.querySelectorAll('[data-customer]').forEach((card, i) => { card.id = 'registered-user-' + i; });
       };
       render();
+      birthdays.addEventListener('click', (e) => {
+        const button = e.target.closest('[data-birthday-pet]'); if (!button) return;
+        query = ''; $('[data-search]').value = ''; render();
+        const pet = [...host.querySelectorAll('[data-pet]')].find((card) => card.dataset.pet === button.dataset.birthdayPet);
+        if (pet) { pet.tabIndex = -1; pet.scrollIntoView({ block: 'start' }); pet.focus({ preventScroll: true }); }
+      });
       $('[data-search]').addEventListener('input', (e) => { query = e.target.value; render(); });
       // Photos and diary for every pet, loaded after the first paint.
       await Promise.all(d.customers.flatMap((c) => c.pets).map(async (p) => { try { extras.set(p.id, await loadPetExtras(p.id)); } catch (e) { extras.set(p.id, { photos: [], entries: [] }); } }));

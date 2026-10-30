@@ -11,3 +11,29 @@
 .pp-user-caption { padding: .75rem 1rem; text-align: left; color: #526079; }
 [data-customer] { scroll-margin-top: 1rem; }
 @media (max-width: 600px) { .pp-user-table th, .pp-user-table td { padding: .65rem; } .pp-user-table { min-width: 540px; } }
+
+.pp-pet-dob { display: block; margin-top: .2rem; color: #526079; }
+.pp-birthdays { margin: 1.5rem 0 2rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--pp-line, #dce1ea); border-radius: 16px; background: #fff; }
+.pp-birthday-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.pp-birthday-heading .pp-eyebrow { margin: 0 0 .3rem; }
+.pp-birthday-heading h2 { margin: 0; font-size: 1.3rem; }
+.pp-birthday-list { list-style: none; padding: 0; margin: 0; }
+.pp-birthday-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--pp-line, #dce1ea); }
+.pp-birthday-date { flex: 0 0 5rem; text-align: center; border-radius: 12px; padding: .65rem .3rem; background: #f3f5f8; }
+.pp-birthday-date strong, .pp-birthday-date span { display: block; }
+.pp-birthday-date strong { font-size: 1.5rem; line-height: 1.2; }
+.pp-birthday-date span { font-size: .8rem; }
+.pp-birthday-details { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.pp-birthday-details h3 { margin: 0 0 .25rem; }
+.pp-birthday-details p { margin: .15rem 0; color: #526079; }
+.pp-birthday-action { display: flex; flex-direction: column; align-items: flex-end; gap: .5rem; }
+.pp-birthday-status { font-size: .8rem; color: #526079; }
+.pp-birthday-item.is-today .pp-birthday-date { background: #e6f4ed; color: #1f6242; }
+.pp-birthday-item.is-today .pp-birthday-status { font-weight: 700; color: #1f6242; }
+[data-pet] { scroll-margin-top: 1rem; }
+@media (max-width: 600px) {
+  .pp-birthday-item { flex-wrap: wrap; gap: .75rem; }
+  .pp-birthday-date { flex-basis: 4rem; }
+  .pp-birthday-details { flex-basis: calc(100% - 5rem); }
+  .pp-birthday-action { flex-basis: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
+}
