@@ -30,6 +30,7 @@
           <p class="pp-kicker">Your customer account</p>
           <h1>Hello, <span data-owner-first>…</span>.</h1>
           <p class="pp-dash-sub">Happy pets. Peace of mind. Everything in one place.</p>
+          <a class="pp-primary" href="#preferences-heading">Photo &amp; birthday preferences ↓</a>
         </header>
 
         <section class="pp-booking-cta" aria-label="Book pet care">
@@ -60,6 +61,24 @@
             <button type="button" class="pp-primary" data-edit-owner><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l3 3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Edit your details</button>
           </aside>
         </div>
+
+        <section class="pp-preferences" aria-labelledby="preferences-heading">
+          <p class="pp-kicker">Your choice, your peace of mind</p>
+          <h2 id="preferences-heading">Photo &amp; birthday preferences</h2>
+          <p>Choose what you’re comfortable with for the pets on your account. These choices are separate, optional and can be changed here at any time.</p>
+          <form data-preferences-form>
+            <fieldset><legend>Photos of your pets</legend>
+              <label class="pp-preference"><input name="diaryPhotos" type="checkbox" aria-describedby="diary-permission-help"><span><strong>Allow photos for my private pet diary</strong><span id="diary-permission-help">I permit my carer to take pictures of my pets during their time together for my pet diary. The diary gives me exclusive customer access to those pictures, creating memories and offering peace of mind while my pets are in their carer’s care. Only I and the Palmers Pet Care team can access it; it isn’t a public gallery.</span></span></label>
+              <label class="pp-preference"><input name="onlinePhotos" type="checkbox" aria-describedby="online-permission-help"><span><strong>Allow Palmers Pet Care to use photos of my pets online</strong><span id="online-permission-help">I give permission for photos of my pets to be shared on the Palmers Pet Care website and social media. This is separate from the private pet diary — diary permission alone does not allow online use.</span></span></label>
+            </fieldset>
+            <fieldset><legend>Celebrate their birthday</legend>
+              <label class="pp-preference"><input name="birthdayCards" type="checkbox" aria-describedby="birthday-card-help"><span><strong>I’d like a birthday card for my pet</strong><span id="birthday-card-help">Birthday cards are offered to customers who have used their carer’s services within the 12 months before their pet’s birthday. Please keep your address and your pet’s date of birth up to date.</span></span></label>
+              <label class="pp-preference"><input name="birthdayEmails" type="checkbox" aria-describedby="birthday-email-help"><span><strong>I’d like a birthday email for my pet</strong><span id="birthday-email-help">A birthday email for each pet with a recorded date of birth. This choice is separate from birthday cards. Booking and cancellation emails are unaffected.</span></span></label>
+            </fieldset>
+            <button class="pp-primary" type="submit">Save preferences</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </form>
+        </section>
 
         <section class="pp-diary-card" aria-labelledby="diary-heading" data-diary-card>
           <div class="pp-diary-head">
@@ -138,8 +157,7 @@
             <p class="pp-hint">Someone we can call if we can’t reach you. Please check they’re happy to be listed.</p>
 
             <h3 class="pp-form-heading">Emails from us</h3>
-            <label class="pp-check" for="of-birthday"><input id="of-birthday" name="birthdayEmails" type="checkbox" checked>Send birthday cards</label>
-            <p class="pp-hint">A birthday email for each pet with a date of birth. Booking and cancellation emails are always sent.</p>
+            <p class="pp-hint">Photo and birthday choices can be changed in Photo &amp; birthday preferences on your account page.</p>
           </div>
           <p class="pp-form-error" role="alert" data-error></p>
           <div class="pp-modal-actions"><button type="button" class="pp-secondary" data-close>Cancel</button><button type="submit" class="pp-primary" data-submit>Save</button></div>

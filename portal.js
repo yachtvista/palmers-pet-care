@@ -209,7 +209,7 @@
     <article class="pp-card pp-owner">
       <p class="pp-eyebrow">Owner</p>
       <div class="pp-owner-head">${o.photoUrl ? `<img src="${imgUrl(o.photoUrl)}" alt="">` : ''}<h3>${esc(o.name)}</h3></div>
-      <dl class="pp-facts"><div><dt>Email</dt><dd><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></dd></div>${o.phone ? `<div><dt>Mobile</dt><dd><a href="${telHref(o.phone)}">${esc(o.phone)}</a>${o.whatsapp ? '<span class="pp-pill-wa">WhatsApp</span>' : ''}</dd></div>` : ''}${o.workPhone ? `<div><dt>Work number</dt><dd><a href="${telHref(o.workPhone)}">${esc(o.workPhone)}</a>${o.workExt ? ' · ext. ' + esc(o.workExt) : ''}</dd></div>` : ''}${o.address ? `<div><dt>Home address</dt><dd>${esc(o.address)}</dd></div>` : ''}<div><dt>Birthday cards</dt><dd>${o.birthdayEmails === false ? 'Off' : 'On'}</dd></div><div><dt>Member since</dt><dd>${when(o.memberSince)}</dd></div>${o.lastLoginAt ? `<div><dt>Last sign-in</dt><dd>${when(o.lastLoginAt)}</dd></div>` : ''}</dl>
+      <dl class="pp-facts"><div><dt>Email</dt><dd><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></dd></div>${o.phone ? `<div><dt>Mobile</dt><dd><a href="${telHref(o.phone)}">${esc(o.phone)}</a>${o.whatsapp ? '<span class="pp-pill-wa">WhatsApp</span>' : ''}</dd></div>` : ''}${o.workPhone ? `<div><dt>Work number</dt><dd><a href="${telHref(o.workPhone)}">${esc(o.workPhone)}</a>${o.workExt ? ' · ext. ' + esc(o.workExt) : ''}</dd></div>` : ''}${o.address ? `<div><dt>Home address</dt><dd>${esc(o.address)}</dd></div>` : ''}<div><dt>Birthday cards</dt><dd>${o.birthdayCards ? 'Requested · subject to 12-month eligibility' : 'Not requested'}</dd></div><div><dt>Birthday emails</dt><dd>${o.birthdayEmails === false ? 'Off' : 'On'}</dd></div><div><dt>Private diary photos</dt><dd>${o.diaryPhotos ? 'Permitted' : 'Not permitted'}</dd></div><div><dt>Online photos</dt><dd>${o.onlinePhotos ? 'Permitted' : 'Not permitted'}</dd></div><div><dt>Member since</dt><dd>${when(o.memberSince)}</dd></div>${o.lastLoginAt ? `<div><dt>Last sign-in</dt><dd>${when(o.lastLoginAt)}</dd></div>` : ''}</dl>
       ${(o.emergencyName || o.emergencyPhone || o.emergencyRelationship) ? `<dl class="pp-emergency"><dt>Emergency contact</dt><dd>${esc(emergencyLine(o) || '—')}${o.emergencyPhone ? `<small><a href="${telHref(o.emergencyPhone)}">${esc(o.emergencyPhone)}</a></small>` : ''}</dd></dl>` : ''}
     </article>`;
 
@@ -286,9 +286,21 @@
           <div><dt>Work number</dt><dd>${dash(workText(o))}</dd></div>
           <div><dt>Home address</dt><dd>${dash(o.address)}</dd></div>
           <div><dt>Emergency contact</dt><dd>${em || o.emergencyPhone ? `${em ? esc(em) : ''}${o.emergencyPhone ? `<span class="pp-line2">${esc(o.emergencyPhone)}</span>` : ''}` : '<span class="is-empty">—</span>'}</dd></div>
-          <div><dt>Birthday cards</dt><dd>${o.birthdayEmails === false ? 'Off' : 'On'}</dd></div>`;
+          <div><dt>Birthday cards</dt><dd>${o.birthdayCards ? 'Requested · subject to 12-month eligibility' : 'Not requested'}</dd></div><div><dt>Birthday emails</dt><dd>${o.birthdayEmails === false ? 'Off' : 'On'}</dd></div><div><dt>Private diary photos</dt><dd>${o.diaryPhotos ? 'Permitted' : 'Not permitted'}</dd></div><div><dt>Online photos</dt><dd>${o.onlinePhotos ? 'Permitted' : 'Not permitted'}</dd></div>`;
         document.title = 'Your pets | Palmer’s Pet Care';
       }
+
+      // Saved independently of contact details; failed requests retain entered choices.
+      const preferences = $('[data-preferences-form]', account);
+      const preferenceKeys = ['diaryPhotos', 'onlinePhotos', 'birthdayCards', 'birthdayEmails'];
+      for (const key of preferenceKeys) preferences.elements[key].checked = d.owner[key] === true;
+      preferences.addEventListener('submit', async (e) => {
+        e.preventDefault(); const button = preferences.querySelector('[type=submit]'); if (button.disabled) return;
+        button.disabled = true; status(preferences, 'Saving…');
+        try { const body = Object.fromEntries(preferenceKeys.map(key => [key, preferences.elements[key].checked])); const r = await api('/me', { method: 'PATCH', body }); d.owner = { ...d.owner, ...r.owner }; renderOwner(); status(preferences, 'Your preferences have been saved.', 'ok'); }
+        catch (err) { status(preferences, err.message, 'error'); }
+        finally { button.disabled = false; }
+      });
 
       // --- pets card ---
       const chevron = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -423,7 +435,7 @@
         e.preventDefault(); if (!validate(ownerForm)) return;
         ownerForm.workExt.removeAttribute('aria-invalid');
         if (ownerForm.workExt.value && !/^\d{1,6}$/.test(ownerForm.workExt.value)) { ownerForm.workExt.setAttribute('aria-invalid', 'true'); ownerForm.workExt.focus(); fail(ownerForm, 'The extension should be digits only, up to 6.'); return; }
-        const body = { name: ownerForm.name.value, phone: ownerForm.phone.value, whatsapp: ownerForm.whatsapp.checked, workPhone: ownerForm.workPhone.value, workExt: ownerForm.workExt.value, address: ownerForm.address.value, emergencyName: ownerForm.emergencyName.value, emergencyRelationship: ownerForm.emergencyRelationship.value, emergencyPhone: ownerForm.emergencyPhone.value, birthdayEmails: ownerForm.birthdayEmails.checked };
+        const body = { name: ownerForm.name.value, phone: ownerForm.phone.value, whatsapp: ownerForm.whatsapp.checked, workPhone: ownerForm.workPhone.value, workExt: ownerForm.workExt.value, address: ownerForm.address.value, emergencyName: ownerForm.emergencyName.value, emergencyRelationship: ownerForm.emergencyRelationship.value, emergencyPhone: ownerForm.emergencyPhone.value };
         busy(ownerForm, true); fail(ownerForm, '');
         try { const r = await api('/me', { method: 'PATCH', body }); d.owner = { ...d.owner, ...r.owner }; closeDialog(dlg('owner')); renderOwner(); }
         catch (err) { fail(ownerForm, err.message); }
@@ -468,7 +480,7 @@
         const add = t.closest('[data-add-pet]'); if (add) { openPetModal(null, add); return; }
         const ed = t.closest('[data-edit-pet]'); if (ed) { openPetModal(d.pets.find((x) => x.id === ed.dataset.editPet), ed); return; }
         const rm = t.closest('[data-remove-pet]'); if (rm) { const p = d.pets.find((x) => x.id === rm.dataset.removePet); if (!p) return; confirmForm.dataset.petId = p.id; account.querySelectorAll('[data-confirm-name]').forEach((n) => { n.textContent = p.name; }); openDialog('confirm', rm); return; }
-        const eo = t.closest('[data-edit-owner]'); if (eo) { const o = d.owner; ownerForm.reset(); ownerForm.name.value = o.name; ownerForm.email.value = o.email; ownerForm.phone.value = o.phone || ''; ownerForm.whatsapp.checked = !!o.whatsapp; ownerForm.workPhone.value = o.workPhone || ''; ownerForm.workExt.value = o.workExt || ''; ownerForm.address.value = o.address || ''; ownerForm.emergencyName.value = o.emergencyName || ''; ownerForm.emergencyRelationship.value = o.emergencyRelationship || ''; ownerForm.emergencyPhone.value = o.emergencyPhone || ''; ownerForm.birthdayEmails.checked = o.birthdayEmails !== false; renderOwnerPhotoField(); ownerPhotoStatus(''); openDialog('owner', eo); ownerForm.name.focus(); return; }
+        const eo = t.closest('[data-edit-owner]'); if (eo) { const o = d.owner; ownerForm.reset(); ownerForm.name.value = o.name; ownerForm.email.value = o.email; ownerForm.phone.value = o.phone || ''; ownerForm.whatsapp.checked = !!o.whatsapp; ownerForm.workPhone.value = o.workPhone || ''; ownerForm.workExt.value = o.workExt || ''; ownerForm.address.value = o.address || ''; ownerForm.emergencyName.value = o.emergencyName || ''; ownerForm.emergencyRelationship.value = o.emergencyRelationship || ''; ownerForm.emergencyPhone.value = o.emergencyPhone || ''; renderOwnerPhotoField(); ownerPhotoStatus(''); openDialog('owner', eo); ownerForm.name.focus(); return; }
         const opr = t.closest('[data-owner-photo-remove]'); if (opr) { (async () => { try { ownerPhotoStatus('Removing…'); const r = await api('/me/photo', { method: 'DELETE' }); d.owner = { ...d.owner, ...r.owner }; renderOwner(); renderOwnerPhotoField(); ownerPhotoStatus('Photo removed', 'ok'); } catch (err) { ownerPhotoStatus(err.message, 'error'); } })(); return; }
         const more = t.closest('[data-show-more]'); if (more) { state.showAll = true; renderDiary(); const grid = $('.pp-diary-grid', account); const cards = grid ? grid.children : []; if (cards[PAGE]) cards[PAGE].querySelector('button').focus(); return; }
         const rp = t.closest('[data-profile-remove]'); if (rp) { (async () => { try { photoStatus('Removing…'); const r = await api('/me/pets/' + encodeURIComponent(rp.dataset.profileRemove) + '/profile-photo', { method: 'DELETE' }); applyPet(r.pet); renderPets(); photoStatus('Photo removed', 'ok'); } catch (err) { photoStatus(err.message, 'error'); } })(); return; }
@@ -547,7 +559,7 @@
           ${rows.length ? `<ul class="pp-birthday-list">${rows.map(({ owner, pet, birth }) => {
             const age = year - birth.year;
             const status = birth.day === day ? 'Today' : birth.day < day ? 'Earlier this month' : 'Coming up';
-            return `<li class="pp-birthday-item${birth.day === day ? ' is-today' : ''}"><div class="pp-birthday-date"><strong>${birth.day}</strong><span>${esc(monthName)}</span></div><div class="pp-birthday-details"><h3>${esc(pet.name)}</h3><p>${esc(pet.species || 'Pet')} · ${age ? `Turns ${age} ${age === 1 ? 'year' : 'years'} old` : 'Born this month'}</p><p>Owner: ${esc(owner.name || owner.email || 'Not provided')}</p></div><div class="pp-birthday-action"><span class="pp-birthday-status">${status}</span><button class="pp-btn ghost" type="button" data-birthday-pet="${esc(pet.id)}">View pet</button></div></li>`;
+            return `<li class="pp-birthday-item${birth.day === day ? ' is-today' : ''}"><div class="pp-birthday-date"><strong>${birth.day}</strong><span>${esc(monthName)}</span></div><div class="pp-birthday-details"><h3>${esc(pet.name)}</h3><p>${esc(pet.species || 'Pet')} · ${age ? `Turns ${age} ${age === 1 ? 'year' : 'years'} old` : 'Born this month'}</p><p>Owner: ${esc(owner.name || owner.email || 'Not provided')}</p><p>Card: ${owner.birthdayCards ? 'requested — check care within the preceding 12 months' : 'not requested'} · Birthday email: ${owner.birthdayEmails === false ? 'off' : 'on'}</p></div><div class="pp-birthday-action"><span class="pp-birthday-status">${status}</span><button class="pp-btn ghost" type="button" data-birthday-pet="${esc(pet.id)}">View pet</button></div></li>`;
           }).join('')}</ul>` : '<p class="pp-empty">No pets with a recorded birthday this month.</p>'}`;
       };
       renderBirthdays();
