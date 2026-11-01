@@ -347,9 +347,9 @@ body h1, body h2, body h3, body .brand strong, body .banner h1, body .page-head 
 
 /* Navigation is intentionally a burger at every viewport size. */
 .topbar-inner { position: relative; }
-.topbar .brand img { width: 85px; height: 85px; flex-shrink: 0; margin: 5px 0; border-radius: 50%; }
+.topbar .brand img { width: 149px; height: 149px; flex-shrink: 0; margin: 5px 0; border-radius: 50%; }
 .header-actions, .topbar-inner > .customer-login { margin-left: auto; }
-@media (max-width: 360px) {
+@media (max-width: 479px) { /* compact header so the larger logo leaves room for the menu */
   .topbar-inner { gap: .5rem; }
   .topbar .brand { min-width: 0; gap: .5rem; }
   .topbar .brand > span { min-width: 0; }

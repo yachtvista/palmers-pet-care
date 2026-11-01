@@ -12,7 +12,7 @@ body.hb-page { background: var(--hb-bg); }
 .hb-top { padding: 1.1rem 0 .4rem; background: var(--hb-bg); position: relative; z-index: 20; }
 .hb-top-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .hb-top .brand { display: flex; align-items: center; gap: .7rem; text-decoration: none; color: #1b3354; }
-.hb-top .brand img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.hb-top .brand img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; }
 .hb-nav { display: flex; align-items: center; gap: 2.4rem; font-size: 1rem; }
 .hb-nav a { text-decoration: none; color: var(--hb-ink); padding: .3rem 0; }
 .hb-nav a:hover { color: var(--hb-teal); }
