@@ -1,0 +1,3 @@
+# GitHub Pages (Jekyll) build settings. Internal folders stay in the repository but are not
+# published on palmerspetcare.co.uk.
+exclude: [docs, tests, deployment]
