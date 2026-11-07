@@ -388,5 +388,5 @@ body.menu-open .topbar nav { display: block; }
 }
 
 /* Remembrance poppy, placed just after the Palmer’s Pet Care wordmark. */
-.brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:28px;height:33px;min-width:28px;flex:none;object-fit:contain;border-radius:0;margin-left:3px}
-@media(max-width:420px){.brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:24px;height:29px;min-width:24px;margin-left:0}}
+.brand img.remembrance-poppy,.hb-top .brand img.remembrance-poppy,.topbar .brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:28px;height:33px;min-width:28px;flex:none;object-fit:contain;border-radius:0;margin-left:3px}
+@media(max-width:420px){.brand img.remembrance-poppy,.hb-top .brand img.remembrance-poppy,.topbar .brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:24px;height:29px;min-width:24px;margin-left:0}}
