@@ -231,3 +231,5 @@
 
 /* Disabled slots stay in the accessibility tree but must not trap wheel/touch scrolling. */
 .day-grid button.slot:disabled{pointer-events:none}
+
+.planner-scroll{touch-action:pan-x pinch-zoom}

@@ -319,16 +319,41 @@
   $('#override-confirm').onclick = () => { if (!busy) saveBooking(true); };
   $('#override-cancel').onclick = () => { $('#override-box').hidden = true; };
 
-  // Browser scroll chaining can stop at an inner boundary, especially over time slots.
-  // Pass only the unconsumed vertical wheel distance to this dialog, never the page.
-  $('#planner-scroll').addEventListener('wheel',e=>{
+  // Keep all vertical scrolling inside the planner: timeline first, then its dialog.
+  const timeline=$('#planner-scroll');let pan=null,momentum=0;
+  function scrollPlanner(distance){
+    const before=timeline.scrollTop,outerBefore=dialog.scrollTop;
+    timeline.scrollTop=Math.max(0,Math.min(timeline.scrollHeight-timeline.clientHeight,before+distance));
+    dialog.scrollTop+=distance-(timeline.scrollTop-before);
+    return timeline.scrollTop-before+dialog.scrollTop-outerBefore;
+  }
+  function stopMomentum(){cancelAnimationFrame(momentum);momentum=0;}
+  timeline.addEventListener('wheel',e=>{
     if(!dialog.open||e.ctrlKey||e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)||!e.cancelable)return;
-    const timeline=e.currentTarget,scale=e.deltaMode===1?16:e.deltaMode===2?timeline.clientHeight:1;
+    stopMomentum();const scale=e.deltaMode===1?16:e.deltaMode===2?timeline.clientHeight:1;
     const distance=e.deltaY*scale,before=timeline.scrollTop,max=timeline.scrollHeight-timeline.clientHeight;
-    const next=Math.max(0,Math.min(max,before+distance)),remainder=distance-(next-before);
+    const remainder=distance-(Math.max(0,Math.min(max,before+distance))-before);
     if(Math.abs(remainder)<.5)return;
-    e.preventDefault();timeline.scrollTop=next;dialog.scrollTop+=remainder;
+    e.preventDefault();scrollPlanner(distance);
   },{passive:false});
+  // Native touch latching can refuse to leave a nested scroller. Handle vertical
+  // pans in this region, retaining horizontal day navigation and pinch zoom.
+  timeline.addEventListener('touchstart',e=>{stopMomentum();if(e.touches.length!==1){pan=null;return;}const t=e.touches[0];pan={x:t.clientX,y:t.clientY,lastY:t.clientY,time:performance.now(),velocity:0,axis:null};},{passive:true});
+  timeline.addEventListener('touchmove',e=>{
+    if(!pan||e.touches.length!==1){pan=null;return;}
+    const t=e.touches[0],now=performance.now(),dx=t.clientX-pan.x,dy=t.clientY-pan.y;
+    if(!pan.axis){if(Math.max(Math.abs(dx),Math.abs(dy))<4)return;pan.axis=Math.abs(dy)>Math.abs(dx)?'vertical':'horizontal';}
+    if(pan.axis!=='vertical')return;
+    if(e.cancelable)e.preventDefault();const distance=pan.lastY-t.clientY;
+    pan.velocity=Math.max(-3,Math.min(3,distance/Math.max(8,now-pan.time)));scrollPlanner(distance);pan.lastY=t.clientY;pan.time=now;
+  },{passive:false});
+  timeline.addEventListener('touchend',()=>{
+    const ended=pan;pan=null;if(!ended||ended.axis!=='vertical'||performance.now()-ended.time>100)return;
+    let velocity=ended.velocity,last=performance.now();
+    const frame=now=>{if(!dialog.open)return;const elapsed=Math.min(40,now-last);last=now;velocity*=Math.exp(-elapsed/230);if(Math.abs(velocity)<.02||Math.abs(scrollPlanner(velocity*elapsed))<.1){momentum=0;return;}momentum=requestAnimationFrame(frame);};
+    momentum=requestAnimationFrame(frame);
+  },{passive:true});
+  timeline.addEventListener('touchcancel',()=>{pan=null;stopMomentum();},{passive:true});
 
   $('#planner-range').onchange=e=>{plannerRange=Number(e.target.value);renderDay();};
   for(const [id,delta] of [['day-prev',-1],['day-next',1]])$('#'+id).onclick=()=>openDay(S.dateOf(S.absAt(selected,'00:00')+delta*1440));
