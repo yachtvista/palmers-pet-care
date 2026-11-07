@@ -228,3 +228,6 @@
 .appointment-pet-photo{width:88px;height:88px;flex:0 0 88px}.appointment-pet-photo img,.appointment-pet-placeholder{width:88px;height:88px;border-radius:8px;object-fit:cover}.appointment-pet-photo img{display:block}.appointment-pet-placeholder{display:grid;place-items:center;background:#f0f3f5;font-size:30px;font-weight:700;color:#53616b}
 .appointment-pet img[hidden],.appointment-pet-placeholder[hidden],.appointment-photo-note[hidden]{display:none}.appointment-pet strong,.appointment-pet span,.appointment-pet small{display:block;overflow-wrap:anywhere}.appointment-pet span,.appointment-pet small{font-size:12px;color:#53616b;margin-top:4px}.appointment-pet .appointment-pet-placeholder:not([hidden]){display:grid;margin:0;font-size:30px}
 @media(max-width:650px){.appointment-pet{width:100%}}
+
+/* Disabled slots stay in the accessibility tree but must not trap wheel/touch scrolling. */
+.day-grid button.slot:disabled{pointer-events:none}
