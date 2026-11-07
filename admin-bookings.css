@@ -164,8 +164,8 @@
 .booker-modal{width:min(780px,96vw);max-width:96vw}.booker-modal .pp-form{gap:.8rem}
 .booker-modal .pp-modal-head{position:sticky;top:-1.4rem;background:#fff;z-index:4;padding:.7rem 0}
 .stay-dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
-#stay-fields .checkbox-row{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:start;gap:.5rem;padding:.4rem 0;cursor:pointer}
-#stay-fields .checkbox-row input{width:18px;height:18px;min-height:0;padding:0;margin:2px 0;accent-color:#516356}
+#stay-fields .checkbox-row,#price-form .checkbox-row{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:start;gap:.5rem;padding:.4rem 0;cursor:pointer}
+#stay-fields .checkbox-row input,#price-form .checkbox-row input{width:18px;height:18px;min-height:0;padding:0;margin:2px 0;accent-color:#516356}
 #custom-price-fields{display:grid;grid-template-columns:140px minmax(0,1fr);gap:.8rem}
 #custom-price-fields[hidden]{display:none}
 #stay-estimate{margin:0;padding:1rem;background:#edf4ef;border:1px solid #cadccf;border-radius:10px;font-size:14px;line-height:1.6}
