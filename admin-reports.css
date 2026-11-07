@@ -4,3 +4,5 @@
 .report-layout{grid-template-columns:230px minmax(0,1fr)}
 .report-layout .report-shell{margin:0 auto;align-self:start}
 @media(max-width:760px){.report-layout{grid-template-columns:minmax(0,1fr)}}
+
+.audit-search{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:20px 0}.audit-search label{display:grid;gap:5px;font-size:14px}.audit-search input,.audit-search select{font:inherit;padding:10px;border:1px solid #d9d2e7;border-radius:8px;min-width:0;max-width:100%;background:#fff}.audit-search button{margin:0}.audit-pagination{display:flex;gap:18px;align-items:center;margin:22px 0;flex-wrap:wrap}.audit-rows td:last-child{white-space:normal;min-width:130px}@media(max-width:600px){.audit-search label{flex:1 1 145px}.audit-search input,.audit-search select{width:100%}}

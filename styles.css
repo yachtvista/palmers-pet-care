@@ -386,3 +386,7 @@ body.menu-open .topbar nav { display: block; }
   .cy-cat { width: 66px; height: 44px; }
   .cy-ball { width: 18px; height: 18px; }
 }
+
+/* Remembrance poppy, placed just after the Palmer’s Pet Care wordmark. */
+.brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:28px;height:33px;min-width:28px;flex:none;object-fit:contain;border-radius:0;margin-left:3px}
+@media(max-width:420px){.brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:24px;height:29px;min-width:24px;margin-left:0}}
