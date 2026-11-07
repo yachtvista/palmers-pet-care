@@ -390,3 +390,16 @@ body.menu-open .topbar nav { display: block; }
 /* Remembrance poppy, placed just after the Palmer’s Pet Care wordmark. */
 .brand img.remembrance-poppy,.hb-top .brand img.remembrance-poppy,.topbar .brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:28px;height:33px;min-width:28px;flex:none;object-fit:contain;border-radius:0;margin-left:3px}
 @media(max-width:420px){.brand img.remembrance-poppy,.hb-top .brand img.remembrance-poppy,.topbar .brand img.remembrance-poppy,.pp-side .brand img.remembrance-poppy{width:24px;height:29px;min-width:24px;margin-left:0}}
+
+/* Make the brand name and Selsey easier to read alongside the logo. */
+.brand strong,.hb-top .brand strong,.topbar .brand strong{font-size:1.5rem;line-height:1.18}
+.brand small{font-size:.82rem;line-height:1.5;margin-top:.25rem;letter-spacing:.14em}
+body .pp-side .brand strong{font-size:1.125rem;line-height:1.2}
+@media(max-width:600px){
+ .hb-top .brand strong,.topbar .brand strong{font-size:1.125rem}
+ .brand small{font-size:.75rem}
+ .topbar-inner{flex-wrap:wrap;gap:.5rem}
+ .topbar .brand{flex:1 1 100%}
+ .topbar-inner>.customer-login{width:auto;white-space:nowrap;font-size:.75rem;margin-bottom:.5rem}
+ .topbar-inner>.menu-toggle{margin-bottom:.5rem}
+}
