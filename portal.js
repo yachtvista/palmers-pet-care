@@ -238,7 +238,7 @@
     (async () => {
       let d;
       try { d = await api('/me'); } catch (err) { location.href = 'login.html'; return; }
-      if (d.isAdmin) $('[data-admin-link]').hidden = false;
+      if (d.isAdmin) { $('[data-admin-link]').hidden = false; document.querySelectorAll('[data-admin-reports]').forEach(n => n.hidden = false); }
       const opts = d.options || {};
       const PAGE = 6;
       const photosByPet = new Map(); // petId → [{id,url,caption,createdAt}] newest first
