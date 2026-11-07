@@ -23,13 +23,19 @@
   }
   const isPast = date => date < today;
   const dayStatus = date => availability.find(d => d.date === date)?.status;
-  const statusLabel = b => b.status === 'approved' ? 'Approved' : 'Awaiting approval';
+  const statusLabel = b => b.status==='cancelled'?'Cancelled':b.status === 'approved' ? 'Approved' : 'Awaiting approval';
   const blocking = b => ['pending', 'approved'].includes(b.status);
   // A booking's products in order (older bookings had one service and a length instead).
   const productsOf = b => Array.isArray(b.activities) ? b.activities.map(a => a.serviceId)
     : b.serviceId === 'sitting' || b.unit === 'days' ? ['sitting']
     : Array(Math.max(1, Math.round((b.duration || 0.5) * 60 / (S.PRODUCT_MIN[b.serviceId] || 30)))).fill(b.serviceId);
   const windowOf = b => b.startAt != null ? { start: b.startAt, end: b.endAt } : { start: S.absAt(b.date, b.start || b.time), end: S.absAt(b.date, b.start || b.time) + Math.round((b.duration || 0) * (b.unit === 'days' ? 1440 : 60)) };
+  function windowsFor(b){
+    const w=windowOf(b);if(b.careMode!=='ordinary')return[w];
+    const d0=Math.floor(w.start/1440),out=[{start:w.start,end:Math.min(w.end,(d0+1)*1440+480)}];
+    for(let d=d0+1;d*1440+1200<w.end;d++)out.push({start:d*1440+1200,end:Math.min(w.end,(d+1)*1440+480)});
+    return out;
+  }
   const KIND_NAME = { walk: 'Dog walk', visit: 'Home visit', overnight: 'Overnight house-sit' };
   function titleOf(b) {
     const groups = [];
@@ -50,12 +56,12 @@
       const d = new Date(start); d.setUTCDate(d.getUTCDate()+i); const date = iso(d), closed = dayStatus(date), past = isPast(date);
       const add = past
         ? `<button class="calendar-add" type="button" disabled aria-label="${date} is in the past">Past</button>`
-        : `<button class="calendar-add" type="button" data-add="${date}" aria-label="${copyId ? 'Copy booking to' : 'Book pet care on'} ${date}" ${pets.length && !closed ? '' : 'disabled'}>${closed ? (closed === 'full' ? 'Full' : 'Unavailable') : '+'}</button>`;
+        : `<button class="calendar-add" type="button" data-add="${date}" data-count="${bookings.filter(b=>occurs(b,date)).length}" aria-label="${copyId ? 'Copy booking to' : 'Book pet care on'} ${date}" ${pets.length && !closed ? '' : 'disabled'}>${closed ? (closed === 'full' ? 'Full' : 'Unavailable') : '+'}</button>`;
       cells.push(`<div class="calendar-day ${d.getUTCMonth() !== month.getUTCMonth() ? 'outside' : ''} ${date === today ? 'is-today' : ''} ${past ? 'is-past' : ''}" data-date="${date}"><time datetime="${date}">${d.getUTCDate()}</time>${bookings.filter(b => occurs(b,date)).map(b => `<button type="button" class="calendar-event" data-edit="${esc(b.id)}" aria-label="Edit ${esc(b.petNames.join(', '))}, ${date}">${esc(b.petNames.join(', '))}<small>${esc(when(b))} · ${esc(titleOf(b))}</small><small class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</small></button>`).join('')}${add}</div>`);
     }
     $('#calendar-days').innerHTML = cells.join('');
     $('#cancel-copy').hidden = !copyId;
-    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => windowOf(a).start - windowOf(b).start).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(titleOf(b))}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} estimated</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
+    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => windowOf(a).start - windowOf(b).start).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(titleOf(b))}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} ${b.careMode?'agreed charge':'estimated'}</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
     if (dayDialog.open) renderDay();
   }
 
@@ -63,8 +69,8 @@
   // Every blocking window except the one being edited: ours (same household — no travel gap) and
   // everyone else's (times only).
   function othersFor(_date, exceptId) {
-    const mine = bookings.filter(b => b.id !== exceptId && blocking(b)).map(b => ({ ...windowOf(b), same: true }));
-    const theirs = busyTimes.map(b => ({ start: b.startAt, end: b.endAt, same: false }));
+    const mine = bookings.filter(b => b.id !== exceptId && blocking(b)).flatMap(b => windowsFor(b).map(w=>({...w,same:true})));
+    const theirs = busyTimes.map(b => ({ start: b.startAt, end: b.endAt, same: true }));
     return mine.concat(theirs);
   }
   const booker = window.ActivityBooker($('#booker'), {
@@ -108,6 +114,12 @@
   function selectedPets() { return [...form.querySelectorAll('[name="petId"]:checked')].map(el => pets.find(p => p.id === el.value)); }
   function openSheet(date, { half = null, b = null, copy = false } = {}) {
     if (busy) return;
+    if(b?.careMode){
+      const detail=document.createElement('dialog');detail.className='pp-modal';detail.setAttribute('aria-label','House-sitting booking details');
+      detail.innerHTML=`<div class="pp-form"><h2>${esc(b.petNames.join(', '))}</h2><p>${esc(b.date)} ${esc(when(b))}</p><p>${b.careMode==='continuous'?'Continuous care':'Ordinary house-sitting'} · ${statusLabel(b)}</p><p>Agreed booking charge: ${money(b.total)}</p><p>Please contact your regional team to amend, repeat or cancel this agreed booking.</p><button type="button" class="pp-primary">Close</button></div>`;
+      document.body.append(detail);detail.querySelector('button').onclick=()=>detail.close();detail.addEventListener('close',()=>detail.remove());detail.showModal();return;
+    }
+    if(b?.status==='cancelled'&&!copy){$('#calendar-status').textContent='This booking was cancelled. Use Copy to request another visit.';return;}
     if ((!b || copy) && (dayStatus(date) || isPast(date))) { $('#calendar-status').textContent = 'That day can’t be booked. Choose another date.'; return; }
     editing = copy ? null : b?.id || null;
     editingVersion = editing ? b.version : null;

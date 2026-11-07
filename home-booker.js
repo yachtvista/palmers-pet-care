@@ -61,7 +61,7 @@ window.HB = (() => {
   // Free daytime starts for a chain of `len` minutes, and whether the overnight from `date` is free.
   function dayInfo(av, date) {
     const closed = new Set((av.availability || []).map((d) => d.date));
-    const others = (av.busy || []).map((b) => ({ start: b.startAt, end: b.endAt, same: false }));
+    const others = (av.busy || []).map((b) => ({ start: b.startAt, end: b.endAt, same: true }));
     const nowAt = S.absAt(av.today.date, av.today.time);
     return {
       closed: closed.has(date),

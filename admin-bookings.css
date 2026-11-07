@@ -1,0 +1,221 @@
+.booking-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:24px;align-items:start}.calendar-card,.repeat-panel{background:#fff;border:1px solid #dce5df;border-radius:20px;padding:24px}.calendar-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.calendar-toolbar h2,.repeat-panel h2{font-family:'Source Serif 4',serif;margin:0;font-size:26px}.calendar-toolbar>div{display:flex;gap:6px}.calendar-hint,.repeat-panel p{font-size:13px;line-height:1.7;color:#596d65}.calendar-week,.calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.calendar-week span{text-align:center;padding:14px 0;font-size:12px;font-weight:700;color:#64766d}.calendar-days{border-top:1px solid #e4eae5;border-left:1px solid #e4eae5}.calendar-day{min-height:130px;padding:7px;border-right:1px solid #e4eae5;border-bottom:1px solid #e4eae5;min-width:0}.calendar-day.outside{background:#f6f8f5}.calendar-day time{display:block;font-size:12px;margin-bottom:8px}.calendar-day.is-today time{color:#22634b;font-weight:800;text-decoration:underline}.calendar-add{display:block;border:1.5px solid #80a995;border-radius:8px;background:transparent;color:#39785d;width:100%;min-height:35px;font-size:23px;cursor:pointer}.calendar-event{display:block;text-align:left;border:1.5px solid #8d7daa;color:#5e487b;background:transparent;border-radius:7px;width:100%;padding:7px 5px;margin-bottom:6px;cursor:pointer;overflow-wrap:anywhere;font:inherit;font-size:11px}.calendar-event small{display:block;margin-top:4px}.calendar-day.drag-over{background:#e9f3e9;outline:2px solid #39785d;outline-offset:-2px}.repeat-card{border:1.5px solid #8d7daa;border-radius:12px;padding:15px;margin-top:16px;cursor:grab}.repeat-card h3{margin:0 0 8px;font-size:15px;overflow-wrap:anywhere}.repeat-card p{margin:4px 0}.repeat-card button{margin-top:9px}.pet-options{border:0;padding:0;margin:0}.pet-options legend{font-weight:700}.pet-options p{font-size:12px;color:#64766d}.pet-options>div{display:flex;flex-wrap:wrap;gap:8px}.pet-options label{position:relative;display:block!important;cursor:pointer}.pet-options input{position:absolute;opacity:0;width:1px!important}.pet-options span{display:block;border:1.5px solid #cbd8cf;border-radius:30px;padding:10px 18px}.pet-options input:checked+span{background:#e8f1e9;border-color:#37745a;color:#23563e}.pet-options input:checked+span:before{content:'✓ ';}.pet-options input:focus-visible+span{outline:3px solid #8d7daa;outline-offset:3px}.booking-cost{background:#f1f5ee;padding:18px;border-radius:12px;font-size:13px}.booking-cost strong{display:block;margin-top:10px;font-size:21px}.booking-cost p{margin:5px 0}#calendar-status{color:#42624f}#booking-dialog{max-height:90vh;overflow:auto}.calendar-scroll{overflow-x:auto}.calendar-add:focus-visible,.calendar-event:focus-visible{outline:3px solid #633f85;outline-offset:2px}@media(max-width:1150px){.booking-layout{grid-template-columns:1fr}.repeat-panel{max-width:none}#booking-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}@media(max-width:600px){.calendar-card,.repeat-panel{padding:14px}.calendar-week,.calendar-days{min-width:560px}.calendar-day{min-height:110px}.calendar-toolbar h2{font-size:23px}#booking-cards{grid-template-columns:1fr}.calendar-toolbar .pp-secondary{padding:8px 10px}}
+/* Allow the calendar grid to scroll inside its card on narrow screens. */
+.calendar-card,.repeat-panel,.booking-layout{min-width:0}
+.pp-main{min-width:0;background:#f7f4ee}
+.booking-state{font-weight:700;color:#476544;font-size:12px}.calendar-add:disabled{font-size:11px;color:#78686c;border-color:#b4a7aa;cursor:not-allowed;min-height:35px}.admin-calendar-day{display:block;text-align:left;background:white;border-top:0;border-left:0;border-radius:0;font:inherit;cursor:pointer;align-self:stretch}.admin-calendar-day:hover{background:#f1f5ee}.admin-calendar-day:focus-visible{outline:3px solid #633f85;outline-offset:-3px}.admin-calendar-day .calendar-event{cursor:inherit}.day-availability{display:block;font-size:11px;font-weight:700;padding:6px;border:1px solid #8caa91;border-radius:7px;color:#42624f}.day-availability.full,.day-availability.unavailable{border-color:#b4a7aa;color:#78686c}.admin-day-modal{width:min(720px,94vw);max-width:720px;max-height:90vh;overflow:auto}.admin-appointment{border:1px solid #dce5df;border-radius:12px;padding:18px;margin:15px 0}.admin-appointment h3{margin:0 0 8px}.admin-appointment p{font-size:13px;overflow-wrap:anywhere}.admin-appointment dl{font-size:13px}.admin-appointment dl>div{display:flex;gap:12px;margin:7px 0}.admin-appointment dt{min-width:100px;color:#64766d}.admin-appointment dd{margin:0}#day-status{font-size:14px;color:#42624f}
+
+/* Keep the wording as well as colour so approval state is accessible. */
+.booking-state.is-pending,.repeat-card .booking-state.is-pending{color:#b42318}
+.booking-state.is-approved,.repeat-card .booking-state.is-approved{color:#237a3b}
+
+/* ---- Past dates: discoloured, never bookable ---- */
+.calendar-day.is-past{background:repeating-linear-gradient(135deg,#f1efea 0 6px,#ebe8e1 6px 12px)}
+.calendar-day.is-past time{color:#a39c94}
+.calendar-day.is-past .calendar-event{opacity:.6}
+.calendar-day.is-past .calendar-add{border-style:dashed;color:#a39c94;border-color:#cfc8c0;font-size:11px}
+.admin-calendar-day.is-past{background:repeating-linear-gradient(135deg,#f1efea 0 6px,#ebe8e1 6px 12px)}
+.admin-calendar-day.is-past time{color:#a39c94}
+
+/* ---- Day view: AM / PM boxes ---- */
+.day-modal{width:min(640px,94vw)}
+.half-boxes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.half-box{border:1.5px solid #dce5df;border-radius:14px;padding:14px;min-width:0}
+.half-box h3{margin:0 0 10px;font-size:18px}.half-box h3 small{font-size:12px;color:#52665b;font-weight:600}
+.half-item{display:block;width:100%;text-align:left;font:inherit;font-size:13px;border-radius:9px;padding:9px 10px;margin:0 0 8px;min-height:44px;overflow-wrap:anywhere}
+.half-item.is-mine{border:1.5px solid #8d7daa;color:#5e487b;background:#fff;cursor:pointer}
+.half-item.is-mine small{display:block;margin-top:3px}
+.half-item.is-taken{border:1px dashed #c9c2b9;color:#625b54;background:#f6f4f0}
+.half-add{display:block;width:100%;min-height:48px;border:1.5px solid #80a995;border-radius:10px;background:transparent;color:#39785d;font-size:26px;cursor:pointer}
+.half-add:focus-visible,.half-item.is-mine:focus-visible{outline:3px solid #633f85;outline-offset:2px}
+.half-closed{margin:6px 0 0;padding:12px;border-radius:10px;background:#f1efea;color:#78686c;font-weight:700;text-align:center}
+.half-empty{font-size:13px;color:#52665b}
+@media(max-width:600px){.half-boxes{grid-template-columns:1fr}}
+
+/* ---- Drum / rolodex time picker ---- */
+.time-picker{display:flex;gap:14px;align-items:flex-start}
+.wheel{flex:1;min-width:0;position:relative}
+.wheel-label{display:block;font-weight:700;margin-bottom:6px}
+.wheel-window{position:relative;height:220px;border:1.5px solid #cbd8cf;border-radius:14px;overflow:hidden;background:#fff}
+.wheel-track{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;padding:88px 0;box-sizing:border-box;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.wheel-track::-webkit-scrollbar{display:none}
+.wheel-row{height:44px;line-height:44px;text-align:center;scroll-snap-align:center;font-size:19px;font-variant-numeric:tabular-nums;color:#33463d;cursor:pointer;user-select:none}
+.wheel-row.is-selected{font-weight:800;color:#23563e}
+.wheel-row.is-disabled{color:#c3bcb4;text-decoration:line-through;text-decoration-thickness:1px;cursor:not-allowed}
+.wheel-row.is-gap{color:#b07a2a;background:repeating-linear-gradient(135deg,transparent 0 6px,#f7ecd9 6px 12px)}
+.wheel-lens{position:absolute;left:6px;right:6px;top:88px;height:44px;border-top:1.5px solid #80a995;border-bottom:1.5px solid #80a995;border-radius:8px;background:rgba(232,241,233,.35);pointer-events:none}
+.wheel-window::before,.wheel-window::after{content:'';position:absolute;left:0;right:0;height:70px;pointer-events:none;z-index:1}
+.wheel-window::before{top:0;background:linear-gradient(#fff,rgba(255,255,255,0))}
+.wheel-window::after{bottom:0;background:linear-gradient(rgba(255,255,255,0),#fff)}
+.wheel:focus-within .wheel-window{outline:3px solid #633f85;outline-offset:2px}
+.wheel-native{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.wheel.is-off{opacity:.5}
+.picker-reason{font-size:13px;color:#8a5a1f;min-height:1.3em;margin:8px 0 0}
+.picker-summary{font-size:15px;font-weight:700;color:#23563e;margin:4px 0 10px}
+#nights-field{flex:1}
+
+/* ---- Admin day timeline (30-minute grid) ---- */
+.day-grid{position:relative;margin:14px 0 18px;border:1px solid #dce5df;border-radius:12px;background:#fff;padding-left:58px}
+.day-grid .slot{height:28px;border-top:1px solid #eef2ee;position:relative}
+.day-grid .slot:first-child{border-top:0}
+.day-grid .slot.on-hour{border-top-color:#dce5df}
+.day-grid .slot span{position:absolute;left:-52px;top:-8px;font-size:11px;color:#64766d;font-variant-numeric:tabular-nums}
+.day-grid .gap-band{position:absolute;left:58px;right:6px;background:repeating-linear-gradient(135deg,#f7ecd9 0 6px,#fbf5ea 6px 12px);border-left:3px solid #e2c38f;font-size:10px;color:#9b6a22;padding-left:6px;overflow:hidden}
+.day-grid .block{position:absolute;left:64px;right:12px;border-radius:8px;padding:4px 8px;font-size:12px;line-height:1.35;overflow:hidden;border:1.5px solid #8d7daa;background:#f5f1fa;color:#4a3766;cursor:pointer;text-align:left;font-family:inherit}
+.day-grid .block.is-approved{border-color:#5b9a6f;background:#eaf5ec;color:#1f5a33}
+.day-grid .block.is-pending{border-color:#d08a7f;background:#fbefec;color:#8a2e22}
+.day-grid .block strong{display:block}
+.day-grid .block:focus-visible{outline:3px solid #633f85;outline-offset:1px}
+.day-grid.is-closed{background:repeating-linear-gradient(135deg,#f1efea 0 8px,#ebe8e1 8px 16px)}
+.grid-legend{font-size:12px;color:#64766d;display:flex;gap:14px;flex-wrap:wrap}
+.grid-legend i{display:inline-block;width:14px;height:10px;vertical-align:middle;margin-right:4px;border-radius:2px}
+.day-banner{border:1px solid #c9c2b9;border-radius:10px;padding:10px 12px;font-size:13px;margin:8px 0;background:#f6f4f0}
+.override-box{border:1.5px solid #e2c38f;background:#fbf5ea;border-radius:12px;padding:12px;margin-top:10px;font-size:14px}
+.override-box .pp-modal-actions{margin-top:8px}
+.warn-list{margin:8px 0;padding-left:18px;font-size:13px}
+
+/* ---- Activity booker ---- */
+.booker-modal{width:min(620px,94vw);max-height:92vh;overflow:auto}
+.half-boxes{grid-template-columns:repeat(3,minmax(0,1fr))}
+.night-box{background:#f5f3fa;border-color:#d9d1e8}
+.night-box h3{color:#3f3160}
+@media(max-width:760px){.half-boxes{grid-template-columns:1fr}}
+.booker-h{margin:18px 0 8px;font-size:16px}
+.booker-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.booker-line{border:1.5px solid #cbd8cf;border-radius:12px;padding:12px 14px;background:#fff}
+.booker-line.is-night{border-color:#b9acd3;background:#f5f3fa}
+.line-head{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;font-size:14px}
+.line-head small{color:#64766d}
+.line-price{margin-left:auto;font-weight:800;color:#23563e}
+.line-note{margin:6px 0 0;font-size:12.5px;color:#5b5172}
+.line-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.line-label{font-size:12px;font-weight:700;color:#64766d;text-transform:uppercase;letter-spacing:.04em}
+.line-btn{min-height:44px;min-width:76px;padding:6px 12px}
+.line-remove{margin-left:auto;color:#b42318}
+.booker-empty{font-size:13px;color:#64766d;padding:6px 0}
+.booker-add{margin-top:14px}
+.booker-add-label{font-weight:700;margin:0 0 8px}
+.booker-add-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.add-btn{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:48px;padding:8px 14px;border:1.5px dashed #80a995;border-radius:10px;background:#fff;color:#23563e;font:inherit;font-weight:700;cursor:pointer;text-align:left}
+.add-btn::before{content:'+';font-size:20px;line-height:1;margin-right:2px}
+.add-btn small{margin-left:auto;font-weight:600;color:#4c5f56}
+.add-btn:disabled{border-color:#d8d2ca;color:#b0a89f;cursor:not-allowed;background:#faf8f5}
+.add-btn:disabled small{color:#b0a89f}
+.add-btn.is-gap{border-color:#e2c38f;background:repeating-linear-gradient(135deg,#fff 0 6px,#fbf5ea 6px 12px)}
+.add-btn:focus-visible,.line-btn:focus-visible{outline:3px solid #633f85;outline-offset:2px}
+.booker-night{border:1.5px solid #b9acd3;border-radius:12px;padding:12px 14px;background:#f5f3fa}
+.night-base{margin:0 0 10px;font-size:14px;color:#3f3160}
+.booker-night label{display:block;font-weight:700}
+.booker-night select{display:block;width:100%;min-height:44px;margin-top:6px}
+.night-fill{margin:10px 0 0;font-size:14px;font-weight:700}
+.night-fill.is-todo{color:#8a5a1f}.night-fill.is-done{color:#237a3b}
+.booker.is-locked .line-actions,.booker.is-locked .booker-add{display:none}
+.mode-options{border:0;padding:0;margin:8px 0 0}.mode-options legend{font-weight:700}
+.mode-options label{display:inline-block;margin:6px 8px 0 0;cursor:pointer;position:relative}
+.mode-options input{position:absolute;opacity:0}
+.mode-options span{display:block;border:1.5px solid #cbd8cf;border-radius:30px;padding:10px 16px}
+.mode-options input:checked+span{background:#e8f1e9;border-color:#37745a;color:#23563e}
+.mode-options input:focus-visible+span{outline:3px solid #8d7daa;outline-offset:3px}
+@media(max-width:480px){.booker-add-buttons{grid-template-columns:1fr}}
+/* Bounded month summaries and a spacious, real-time daily planner. */
+.admin-calendar-day {height:244px;overflow:hidden;justify-content:flex-start}
+.admin-calendar-day .calendar-event {font-size:.73rem;white-space:normal;margin:3px 0;padding:3px;line-height:1.2}
+.admin-calendar-day .calendar-event small {white-space:normal;overflow:visible}
+.calendar-more {font-weight:700;font-size:.75rem}
+.admin-day-modal {width:min(1440px,96vw);max-width:96vw}
+.admin-day-modal .pp-form {max-width:none}
+.personal-block {background:#eee7f6!important;border:2px dashed #75508e!important;pointer-events:none}
+#extra-planner-days {display:flex;gap:1rem;overflow:auto}
+#extra-planner-days>section {min-width:300px;flex:1}
+#personal-form,#scheduling-form {padding:1rem;border:1px solid #ddd;display:grid;gap:.7rem}
+#stay-fields input,#personal-form input,#scheduling-form input {min-height:44px;max-width:100%}
+@media(max-width:650px){.admin-calendar-day{height:110px;min-width:0;padding:3px}.admin-calendar-day .calendar-event{display:none}.admin-calendar-day .calendar-more{font-size:.6rem}.admin-calendar-day:has(.calendar-event)::after{content:'• Bookings';font-size:.6rem}.admin-day-modal{width:100%;max-width:100%;margin:0;max-height:100dvh;height:100dvh}.admin-day-modal .pp-form{padding:1rem}.calendar-scroll{min-width:0}.admin-calendar-day .day-availability{font-size:.55rem}}
+.day-grid button.slot{display:block;width:100%;padding:0;background:transparent;text-align:left;border:0;border-top:1px solid #eef2ee;border-radius:0;cursor:pointer;font:inherit;color:inherit;min-height:28px}
+.day-grid button.slot:focus-visible{outline:2px solid #1d5c7b;outline-offset:-2px;background:#edf7ef}
+/* Acceptance polish: readable calendar, compact controls, scrollable planner. */
+.admin-calendar-page .booking-layout{grid-template-columns:minmax(0,1fr)}
+.admin-calendar-page .repeat-panel{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:1rem 1.4rem}
+.admin-calendar-page .repeat-panel details{flex:1;min-width:200px}.admin-calendar-page summary{cursor:pointer;padding:.65rem 0;font-weight:700;color:#253e5d}
+.admin-calendar-page .calendar-week,.admin-calendar-page .calendar-days{min-width:0}
+.admin-calendar-day{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;height:256px;padding:7px;gap:4px;overflow:hidden}
+.admin-calendar-day time{margin:0 0 3px;font-weight:700}
+.admin-calendar-day .calendar-event{margin:0;padding:5px 6px;font-size:11px;line-height:1.25;background:#f1f6f0;border-color:#78a187;color:#244b35}
+.admin-calendar-day .calendar-event small{margin-top:2px;font-size:11px;line-height:1.25}
+.admin-calendar-day .calendar-event.is-continuous{border-color:#5684a2;border-left:4px solid #336686;background:#edf4f8;color:#214e6b}
+.admin-calendar-day .calendar-event.is-provisional{background:#fff6e8;border-color:#bd964f;color:#79571f}
+.admin-calendar-day .calendar-event.is-cancelled{background:#f3f3f3;border-color:#aaa;color:#6b6b6b;text-decoration:line-through}
+.admin-calendar-day .booking-state{font-size:10px}.admin-calendar-day .day-availability{margin-top:auto;padding:4px;font-size:10px}
+.calendar-mobile-count{display:none}.calendar-more{font-size:11px;line-height:1.35}
+.admin-calendar-page .pp-modal{margin:auto}
+.admin-day-modal .pp-modal-head{position:sticky;top:-1.4rem;z-index:6;background:white;padding:1rem 0;border-bottom:1px solid #e4eae5}
+.admin-day-modal> .pp-form{padding-top:0;gap:.65rem}
+.admin-day-modal .day-settings form{padding:0 0 .8rem}
+.planner-scroll{max-height:62vh;min-height:300px;overflow:auto;border:1px solid #dce5df;border-radius:12px;overscroll-behavior:contain}
+#planner-columns{display:flex;min-width:0;align-items:flex-start;gap:1rem;padding:0 12px}
+.planner-column,#extra-planner-days>section{flex:1;min-width:290px}
+#extra-planner-days{display:contents}
+#planner-columns h3{position:sticky;top:0;background:#fff;z-index:4;margin:0;padding:12px 0;font-size:14px}
+#planner-columns .day-grid{margin-top:0;border-radius:0;border:0;border-left:1px solid #dce5df}
+.staff-lane-headings{position:sticky;top:38px;z-index:3;height:0;display:flex;pointer-events:none}
+.staff-lane-headings span{flex:1;min-width:0;padding:4px;background:#f0f4f6;border-bottom:1px solid #ccd7dc;font-size:11px;font-weight:700;text-align:center;height:24px;overflow-wrap:anywhere}
+.day-grid .block{padding:3px 5px;font-size:11px}.day-grid .block span{display:block;font-size:10px}
+.day-grid .block.is-continuous{background:#edf4f8;border-color:#5684a2;color:#214e6b}
+.day-grid .gap-band{font-size:9px;line-height:1.1}
+.booker-modal{width:min(780px,96vw);max-width:96vw}.booker-modal .pp-form{gap:.8rem}
+.booker-modal .pp-modal-head{position:sticky;top:-1.4rem;background:#fff;z-index:4;padding:.7rem 0}
+.stay-dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
+#stay-fields .checkbox-row{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:start;gap:.5rem;padding:.4rem 0;cursor:pointer}
+#stay-fields .checkbox-row input{width:18px;height:18px;min-height:0;padding:0;margin:2px 0;accent-color:#516356}
+#custom-price-fields{display:grid;grid-template-columns:140px minmax(0,1fr);gap:.8rem}
+#custom-price-fields[hidden]{display:none}
+#stay-estimate{margin:0;padding:1rem;background:#edf4ef;border:1px solid #cadccf;border-radius:10px;font-size:14px;line-height:1.6}
+#stay-fields p:not(#stay-estimate){font-size:12px;color:#596d65;line-height:1.5;margin:0}
+#personal-form .pp-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+#personal-form input[type=hidden]{display:none}#personal-form label:has([name=reason]){grid-column:1/-1}
+#personal-list p{font-size:13px;overflow-wrap:anywhere;line-height:1.7}#personal-list button{min-height:44px;margin:3px}
+.admin-calendar-page :is(button,summary,input,select):focus-visible{outline:3px solid #8266bb;outline-offset:2px}
+@media(max-width:650px){
+ .admin-calendar-page .calendar-card{padding:12px}
+ .admin-calendar-page .calendar-week span{font-size:10px;padding:10px 0}
+ .admin-calendar-day{height:100px;min-height:100px;padding:4px 2px;gap:3px}
+ .admin-calendar-day .calendar-event,.admin-calendar-day .calendar-more{display:none}
+ .admin-calendar-day:has(.calendar-event)::after{content:none}
+ .calendar-mobile-count{display:block;font-size:10px;line-height:1.3;color:#235471;overflow-wrap:normal}
+ .admin-calendar-day time{font-size:12px}.admin-calendar-day .day-availability{font-size:8px;padding:3px 0;border:0;overflow-wrap:anywhere}
+ .admin-calendar-page .calendar-scroll{overflow:visible}
+ .admin-day-modal,.admin-calendar-page .booker-modal{width:100vw;max-width:100vw;max-height:100dvh;height:100dvh;margin:0;border-radius:0}
+ .admin-day-modal .pp-form,.booker-modal .pp-form{padding:0 14px 16px;min-width:0}
+ .admin-day-modal .pp-modal-head,.booker-modal .pp-modal-head{top:0}
+ .admin-day-modal .pp-modal-head h2,.booker-modal .pp-modal-head h2{font-size:1.2rem}
+ .admin-day-modal .calendar-toolbar{gap:6px}.admin-day-modal .calendar-toolbar label{font-size:12px}
+ .planner-scroll{max-height:54dvh;min-height:270px}
+ .planner-column,#extra-planner-days>section{min-width:300px}
+ .stay-dates{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:.7rem}
+ #stay-fields input{min-width:0}#custom-price-fields{grid-template-columns:1fr}
+ #personal-form{padding:.65rem}#personal-form .pp-fields{gap:.6rem}#personal-form label{font-size:12px}
+}
+.admin-calendar-day{height:280px}
+.calendar-status-compact{display:none}
+.admin-day-modal .pp-modal-head,.booker-modal .pp-modal-head{top:0}
+.admin-calendar-page #admin-booking-form{max-width:none;width:100%;margin:0}
+.day-grid button.slot{height:44px;min-height:44px}
+#planner-columns .block{line-height:1.25}
+@media(max-width:650px){.admin-calendar-day{height:100px}.calendar-status-wide{display:none}.calendar-status-compact{display:inline}.admin-calendar-day .day-availability{overflow-wrap:normal}}
+.admin-calendar-page #personal-form{width:100%;max-width:760px;margin:0}
+#personal-form label:has([name=staffId]){grid-column:1/-1}
+.personal-entry{margin:.8rem 0;padding:1rem;border:1px solid #d7cce1;border-left:4px solid #8b71a1;background:#f8f5fb;border-radius:10px;font-size:13px;overflow-wrap:anywhere}
+.personal-entry p{margin:.4rem 0}.personal-entry>div{display:flex;gap:.5rem;flex-wrap:wrap}
+@media(max-width:650px){.day-grid .block.is-short span{display:none}}
+.account-page:not(.admin-calendar-page) .pp-modal{margin:auto;max-height:94dvh;overflow:auto}
+@media(max-width:650px){
+ .account-page:not(.admin-calendar-page) .calendar-week,.account-page:not(.admin-calendar-page) .calendar-days{min-width:0}
+ .account-page:not(.admin-calendar-page) .calendar-week span{font-size:10px}
+ .account-page:not(.admin-calendar-page) .calendar-day{min-height:88px;padding:5px 2px}
+ .account-page:not(.admin-calendar-page) .calendar-event{display:none}
+ .account-page:not(.admin-calendar-page) .calendar-add{min-height:44px;font-size:20px}
+ .account-page:not(.admin-calendar-page) .calendar-add[data-count]:not([data-count="0"]):not(:disabled){font-size:0}
+ .account-page:not(.admin-calendar-page) .calendar-add[data-count]:not([data-count="0"]):not(:disabled)::after{content:attr(data-count) ' booked';font-size:9px}
+ .account-page:not(.admin-calendar-page) .calendar-add:disabled{font-size:9px}
+}
+/* WebKit native select widgets otherwise shrink below a comfortable touch target. */
+.admin-calendar-page :is(.pp-fields,#personal-form,#scheduling-form,.calendar-toolbar) select{height:44px;min-height:44px;padding:.6rem .75rem;font:inherit;color:var(--navy);border:1px solid #cfd5e2;border-radius:9px;background-color:#fff}
+.admin-calendar-page .pp-close{min-width:44px;min-height:44px}
