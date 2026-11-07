@@ -17,6 +17,7 @@
   let privateBlocks=[], staff=[], scheduling={buffer_minutes:30}, plannerRange=1, schedulingDirty=false;
   let sheetMode = null; // { kind: 'add' } | { kind: 'move', booking }
   month.setUTCDate(1);
+  const priceDialog=$('#price-dialog'),priceForm=$('#price-form');let priceBooking=null;
   const dialog=$('#day-dialog'), form=$('#availability-form'), sheet=$('#admin-booking-dialog'), sheetForm=$('#admin-booking-form');
   const state = b => b.status==='cancelled'?'Cancelled':b.status === 'approved' ? 'Approved' : 'Awaiting approval';
   const closed = date => availability.find(d => d.date === date)?.status || 'open';
@@ -132,13 +133,13 @@
     if(!schedulingDirty)for(const el of $('#scheduling-form').elements){if(el.name)el.value=el.name==='buffer_minutes'?scheduling[el.name]??30:scheduling[el.name]==null?'':scheduling[el.name]/100;}
 
     $('#planner-scroll').scrollTop=preserveDraft?oldScroll:Math.max(0,y(Math.min(420,...list.flatMap(b=>windowsFor(b).filter(w=>w.start<S.absAt(selected,'00:00')+1440&&w.end>S.absAt(selected,'00:00')).map(w=>Math.max(0,w.start-S.absAt(selected,'00:00')))))));
-    $('#day-appointments').innerHTML=list.length ? list.map(b=>`<article class="admin-appointment" id="appt-${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><button type="button" class="pp-secondary" data-care-details="${esc(b.userId)}">Customer and pet profiles / care instructions</button><div data-details-for="${esc(b.userId)}"></div><p><strong>${esc(b.owner.name)}</strong> · <a href="mailto:${esc(b.owner.email)}">${esc(b.owner.email)}</a>${b.owner.phone?` · ${esc(b.owner.phone)}`:''}</p><dl><div><dt>Activities</dt><dd>${esc(titleOf(b))}</dd></div><div><dt>When</dt><dd>${esc(when(b))} (UK)</dd></div><div><dt>Booking charge</dt><dd>${money(b.total)}</dd></div><div><dt>Status</dt><dd>${state(b)}${b.gapOverride?' · 30-minute gap overridden':''}</dd></div></dl>${b.status==='cancelled'?'<p>Cancelled. Any refund must be reconciled separately.</p>':b.status==='approved'?'<p class="booking-state is-approved">✓ Approved</p>':`<button class="pp-primary" type="button" data-approve="${esc(b.id)}">Approve appointment</button>`} ${b.status!=='cancelled' && (b.unit === 'hours' || b.serviceId==='sitting') && Array.isArray(b.activities) && !past ? `<button class="pp-secondary" type="button" data-move="${esc(b.id)}">Edit booking</button>` : ''} ${b.status!=='cancelled'?`<button class="pp-secondary" type="button" data-cancel="${esc(b.id)}">Cancel appointment</button>`:''}</article>`).join('') : '<p class="pp-empty">No appointments for this day.</p>';
+    $('#day-appointments').innerHTML=list.length ? list.map(b=>`<article class="admin-appointment" id="appt-${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><button type="button" class="pp-secondary" data-care-details="${esc(b.userId)}">Customer and pet profiles / care instructions</button><div data-details-for="${esc(b.userId)}"></div><p><strong>${esc(b.owner.name)}</strong> · <a href="mailto:${esc(b.owner.email)}">${esc(b.owner.email)}</a>${b.owner.phone?` · ${esc(b.owner.phone)}`:''}</p><dl><div><dt>Activities</dt><dd>${esc(titleOf(b))}</dd></div><div><dt>When</dt><dd>${esc(when(b))} (UK)</dd></div><div><dt>Booking charge</dt><dd>${money(b.total)}</dd></div><div><dt>Status</dt><dd>${state(b)}${b.gapOverride?' · 30-minute gap overridden':''}</dd></div></dl>${b.status!=='cancelled'&&!isPast(b.date)?`<button class="pp-secondary" type="button" data-price-edit="${esc(b.id)}">Change agreed price</button>`:''}${b.status==='cancelled'?'<p>Cancelled. Any refund must be reconciled separately.</p>':b.status==='approved'?'<p class="booking-state is-approved">✓ Approved</p>':`<button class="pp-primary" type="button" data-approve="${esc(b.id)}">Approve appointment</button>`} ${b.status!=='cancelled' && (b.unit === 'hours' || b.serviceId==='sitting') && Array.isArray(b.activities) && !past ? `<button class="pp-secondary" type="button" data-move="${esc(b.id)}">Edit booking</button>` : ''} ${b.status!=='cancelled'?`<button class="pp-secondary" type="button" data-cancel="${esc(b.id)}">Cancel appointment</button>`:''}</article>`).join('') : '<p class="pp-empty">No appointments for this day.</p>';
   }
   let disabledBeforeLock=new WeakMap();
   function lock(value){
     if(value&&!busy){sync?.invalidate();disabledBeforeLock=new WeakMap();}
     busy=value;
-    const controls=[...dialog.querySelectorAll('button,select'),...sheetForm.querySelectorAll('button,select,input'),$('#refresh-calendar')];
+    const controls=[...dialog.querySelectorAll('button,select'),...sheetForm.querySelectorAll('button,select,input'),...priceForm.querySelectorAll('button,input'),$('#refresh-calendar')];
     for(const el of controls){
       if(value){if(!disabledBeforeLock.has(el))disabledBeforeLock.set(el,el.disabled);el.disabled=true;}
       else if(disabledBeforeLock.has(el)){el.disabled=disabledBeforeLock.get(el);disabledBeforeLock.delete(el);}
@@ -173,6 +174,7 @@
   $('#availability-warning').onclick=e=>{ if(busy) return; if(e.target.closest('[data-warn-confirm]')) saveAvailability(true); if(e.target.closest('[data-warn-cancel]')){ $('#availability-warning').hidden=true; form.elements.status.value=closed(selected); availabilityDirty=false; } };
   $('#planner-columns').onclick=async e=>{const grid=e.target.closest('.day-grid');if(!grid)return;const clickedDate=grid.dataset.date;const slot=e.target.closest('[data-slot]');if(slot&&!isPast(clickedDate)&&closed(clickedDate)==='open'){selected=clickedDate;await openSheet({kind:'add'});booker.open({date:clickedDate,start:slot.dataset.slot,products:['visit30']});return;}const t=e.target.closest('[data-focus]'); if(t){if(clickedDate!==selected)await openDay(clickedDate);document.getElementById('appt-'+t.dataset.focus)?.scrollIntoView({behavior:'smooth',block:'center'});}};
   $('#day-appointments').onclick=async e=>{
+    const price=e.target.closest('[data-price-edit]');if(price&&!busy){openPrice(bookings.find(b=>b.id===price.dataset.priceEdit));return;}
     const cancel=e.target.closest('[data-cancel]');
     if(cancel&&!busy){
       const b=bookings.find(b=>b.id===cancel.dataset.cancel);
@@ -184,6 +186,27 @@
     const target=e.target.closest('[data-approve]');if(!target||busy)return;const b=bookings.find(b=>b.id===target.dataset.approve);lock(true);$('#day-status').textContent='Approving…';try{
     await api('/admin/bookings/'+b.id,'PATCH',{status:'approved',version:b.version});await load();renderDay(true);$('#day-status').textContent='Appointment approved.';
   }catch(e){$('#day-status').textContent=e.message+' Close and reopen this day to refresh.';}finally{lock(false);}};
+
+  function priceDifference(){
+    const amount=Math.round(Number(priceForm.elements.agreedPrice.value)*100);
+    $('#price-difference').textContent=priceForm.elements.agreedPrice.value!==''&&Number.isSafeInteger(amount)?`Change from current charge: ${money(amount-priceBooking.total)}. Difference from ${priceBooking.standardEstimate==null||priceBooking.pricingVersion==='legacy-agreed-price-v1'?'original booking charge':'saved standard estimate'}: ${money(amount-(priceBooking.standardEstimate??priceBooking.total))}.`:'';
+  }
+  function openPrice(booking){
+    priceBooking=booking;priceForm.reset();priceForm.elements.agreedPrice.value=(booking.total/100).toFixed(2);
+    $('#price-booking').textContent=`${booking.owner.name} · ${booking.petNames.join(', ')} · ${when(booking)}`;
+    $('#price-baseline').textContent=`${booking.standardEstimate==null||booking.pricingVersion==='legacy-agreed-price-v1'?'Original booking charge':'Saved standard estimate'}: ${money(booking.standardEstimate??booking.total)}${booking.provisionalEstimate?' (provisional)':''}. Current booking charge: ${money(booking.total)}.`;
+    $('#price-error').textContent='';priceDifference();priceDialog.showModal();
+  }
+  priceForm.addEventListener('input',priceDifference);
+  priceDialog.addEventListener('click',e=>{if(e.target.closest('[data-close-price]')&&!busy)priceDialog.close();});
+  priceDialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+  priceForm.onsubmit=async e=>{
+    e.preventDefault();if(busy)return;
+    const fields=priceForm.elements,body={priceOnly:true,version:priceBooking.version,agreedPrice:Math.round(Number(fields.agreedPrice.value)*100),priceReason:fields.priceReason.value,priceConfirmed:fields.priceConfirmed.checked};
+    lock(true);$('#price-error').textContent='';
+    try{await api('/admin/bookings/'+priceBooking.id,'PATCH',body);priceDialog.close();await load();renderDay(true);$('#day-status').textContent='Agreed booking price updated. Appointment details and recorded payments are unchanged.';}
+    catch(error){$('#price-error').textContent=error.message;}finally{lock(false);}
+  };
 
   // ---------- add / move a booking (the shared activity booker, admin mode) ----------
   const sf = sheetForm.elements;
@@ -301,7 +324,7 @@
   $('#refresh-calendar').onclick=async()=>{if(busy)return;lock(true);try{await load();$('#calendar-status').textContent='Calendar refreshed.';}catch(e){$('#calendar-status').textContent=e.message;}finally{lock(false);}};
   sync = window.calendarSync({
     read: async signal => {const [data,personal]=await Promise.all([api('/admin/bookings','GET',undefined,signal),api('/admin/personal-availability','GET',undefined,signal)]);return{...data,personal};},
-    paused: () => busy || sheet.open,
+    paused: () => busy || sheet.open || priceDialog.open,
     onError: error => { if ($('#booking-content').hidden) $('#calendar-status').textContent = error.message; },
     apply(data) {
       const changed = JSON.stringify([bookings, services, availability,privateBlocks,scheduling]) !== JSON.stringify([data.bookings, data.services, data.availability,data.personal.blocks,data.personal.config]);

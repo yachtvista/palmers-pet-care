@@ -149,7 +149,8 @@
 .admin-day-modal .pp-modal-head{position:sticky;top:-1.4rem;z-index:6;background:white;padding:1rem 0;border-bottom:1px solid #e4eae5}
 .admin-day-modal> .pp-form{padding-top:0;gap:.65rem}
 .admin-day-modal .day-settings form{padding:0 0 .8rem}
-.planner-scroll{max-height:62vh;min-height:300px;overflow:auto;border:1px solid #dce5df;border-radius:12px;overscroll-behavior:contain}
+.planner-scroll{max-height:62vh;min-height:300px;overflow:auto;border:1px solid #dce5df;border-radius:12px;overscroll-behavior:auto}
+.admin-day-modal{overscroll-behavior:contain}
 #planner-columns{display:flex;min-width:0;align-items:flex-start;gap:1rem;padding:0 12px}
 .planner-column,#extra-planner-days>section{flex:1;min-width:290px}
 #extra-planner-days{display:contents}

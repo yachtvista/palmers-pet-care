@@ -61,7 +61,7 @@
     }
     $('#calendar-days').innerHTML = cells.join('');
     $('#cancel-copy').hidden = !copyId;
-    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => windowOf(a).start - windowOf(b).start).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(titleOf(b))}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} ${b.careMode?'agreed charge':'estimated'}</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
+    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => windowOf(a).start - windowOf(b).start).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(titleOf(b))}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} ${(b.careMode||b.useCustomPrice)?'agreed charge':'estimated'}</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
     if (dayDialog.open) renderDay();
   }
 
@@ -114,9 +114,9 @@
   function selectedPets() { return [...form.querySelectorAll('[name="petId"]:checked')].map(el => pets.find(p => p.id === el.value)); }
   function openSheet(date, { half = null, b = null, copy = false } = {}) {
     if (busy) return;
-    if(b?.careMode){
-      const detail=document.createElement('dialog');detail.className='pp-modal';detail.setAttribute('aria-label','House-sitting booking details');
-      detail.innerHTML=`<div class="pp-form"><h2>${esc(b.petNames.join(', '))}</h2><p>${esc(b.date)} ${esc(when(b))}</p><p>${b.careMode==='continuous'?'Continuous care':'Ordinary house-sitting'} · ${statusLabel(b)}</p><p>Agreed booking charge: ${money(b.total)}</p><p>Please contact your regional team to amend, repeat or cancel this agreed booking.</p><button type="button" class="pp-primary">Close</button></div>`;
+    if(b?.careMode||b?.useCustomPrice){
+      const detail=document.createElement('dialog');detail.className='pp-modal';detail.setAttribute('aria-label',b.careMode?'House-sitting booking details':'Agreed booking details');
+      detail.innerHTML=`<div class="pp-form"><h2>${esc(b.petNames.join(', '))}</h2><p>${esc(b.date)} ${esc(when(b))}</p><p>${b.careMode==='continuous'?'Continuous care':b.careMode?'Ordinary house-sitting':esc(titleOf(b))} · ${statusLabel(b)}</p><p>Agreed booking charge: ${money(b.total)}</p><p>Please contact your regional team to amend, repeat or cancel this agreed booking.</p><button type="button" class="pp-primary">Close</button></div>`;
       document.body.append(detail);detail.querySelector('button').onclick=()=>detail.close();detail.addEventListener('close',()=>detail.remove());detail.showModal();return;
     }
     if(b?.status==='cancelled'&&!copy){$('#calendar-status').textContent='This booking was cancelled. Use Copy to request another visit.';return;}
