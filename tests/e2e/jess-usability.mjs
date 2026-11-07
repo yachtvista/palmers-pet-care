@@ -17,7 +17,11 @@ const normalise=(f,b)=>f.endsWith('.html')?Buffer.from(b.toString().replace(/src
 for(const f of files)ok('Public content/layout unchanged (script cache keys excepted): '+f,hash(normalise(f,readFileSync(resolve(root,f))))===hash(normalise(f,execFileSync('git',['show',publicBase+':'+f],{cwd:root}))));
 
 const verificationId='11111111-1111-4111-8111-111111111111';
-const legacy={date:'2026-12-05',time:'20:00',duration:12,unit:'overnight',serviceId:'sitting',petIds:['pet-selsey'],petNames:['Legacy care dog'],total:4000};
+const legacy={date:'2026-12-05',time:'20:00',duration:12,unit:'overnight',serviceId:'sitting',petIds:['pet-selsey','booked-cat'],petNames:['Legacy care dog','Misty'],total:4000};
+db.prepare("INSERT INTO pets(id,user_id,name,species,age,created_at,updated_at) VALUES('booked-cat','selsey','Misty','Cat','3',1,1),('other-pet','selsey','Not booked','Rabbit','3',1,1)").run();
+const petPhoto=readFileSync(resolve(root,'images/puppy.jpg'));
+db.prepare("INSERT INTO pet_photos(id,pet_id,mime,data,bytes,created_by,created_at,kind) VALUES('appointment-photo','pet-selsey','image/jpeg',?,?, 'jess',1,'profile')").run(petPhoto.toString('base64'),petPhoto.length);
+db.prepare("UPDATE pets SET profile_photo_id='appointment-photo',name='Legacy care dog' WHERE id='pet-selsey'").run();
 db.prepare("INSERT INTO bookings(id,user_id,data,status,created_at,updated_at,division_id) VALUES('legacy','selsey',?,'approved',1,1,'selsey')").run(JSON.stringify(legacy));
 db.prepare("INSERT INTO users(id,email,name,password_hash,created_at,division_id,locked_until) VALUES(?,?,'Release verification (synthetic)','synthetic',1,'selsey',253402300799000)").run(verificationId,'zz-release-customer-'+verificationId+'@example.invalid');
 db.prepare("INSERT INTO division_memberships VALUES(?,'selsey','customer')").run(verificationId);
@@ -57,6 +61,15 @@ try{
  await admin.goto('http://127.0.0.1:8788/admin-calendar.html');await admin.waitForSelector('[data-day]');await admin.click('#next');
  ok('Cancelled verification booking absent from calendar',!(await admin.locator('[data-day="2026-12-24"]').textContent()).includes('Legacy care dog'));
  await openDay(admin,'2026-12-05');ok('Legacy booking has a direct agreed-price action',await admin.locator('[data-price-edit="legacy"]').count()===1);
+ await admin.locator('#appt-legacy .appointment-pets').scrollIntoViewIfNeeded();await admin.waitForFunction(()=>document.querySelector('#appt-legacy .appointment-pet img')?.naturalWidth>0);
+ ok('Only pets included in the booking have a photo card',await admin.locator('#appt-legacy .appointment-pet').count()===2&&await admin.locator('#appt-legacy [data-pet-id="other-pet"]').count()===0);
+ ok('Stored profile photo loads through the protected API',await admin.locator('#appt-legacy .appointment-pet img').evaluate(img=>img.complete&&img.naturalWidth>0&&new URL(img.src).pathname==='/photos/appointment-photo'));
+ ok('Dog and cat have distinguishable species borders',await admin.locator('#appt-legacy .appointment-pets').evaluate(el=>getComputedStyle(el.querySelector('[data-species="Dog"]')).borderColor!==getComputedStyle(el.querySelector('[data-species="Cat"]')).borderColor));
+ ok('Missing pet photo has a labelled placeholder',await admin.locator('#appt-legacy [data-species="Cat"] [role="img"]').getAttribute('aria-label')==='No profile photo available for Misty');
+ await admin.screenshot({path:resolve(out,'appointment-pets-desktop.png')});
+ await admin.locator('#appt-legacy .appointment-pet img').evaluate(img=>img.src='http://127.0.0.1:8787/photos/missing-photo');await admin.waitForFunction(()=>!document.querySelector('#appt-legacy [data-species="Dog"] .appointment-pet-placeholder').hidden);ok('Missing or removed image falls back without a broken-photo card',await admin.locator('#appt-legacy .appointment-pet img').isHidden());
+
+
  await scrollEdge(admin,true);await scrollEdge(admin,false);
  await admin.locator('[data-price-edit="legacy"]').click();await admin.fill('#price-form [name=agreedPrice]','35');await admin.fill('#price-form [name=priceReason]','Jess agreed long stay price');
  ok('Live price difference updates while typing',(await admin.locator('#price-difference').textContent()).includes('-£5.00'));
@@ -64,6 +77,7 @@ try{
  const row=db.prepare("SELECT * FROM bookings WHERE id='legacy'").get(),saved=JSON.parse(row.data);ok('Legacy agreed price saves without changing its original interval',saved.total===3500&&saved.date===legacy.date&&saved.time===legacy.time&&saved.duration===12&&!saved.startAt&&!saved.activities);ok('Before/after price audit retained',db.prepare("SELECT count(*) n FROM booking_price_audit WHERE booking_id='legacy'").get().n===1);
  await admin.locator('[data-price-edit="legacy"]').click();ok('Price persists after reopen',await admin.inputValue('#price-form [name=agreedPrice]')==='35.00');await admin.screenshot({path:resolve(out,'legacy-agreed-price-desktop.png')});await admin.locator('#price-dialog [data-close-price]').first().click();
  const mobile=await page('jess',390);currentPage=mobile;await mobile.setViewportSize({width:390,height:844});await mobile.goto('http://127.0.0.1:8788/admin-calendar.html');await mobile.waitForSelector('[data-day]');await mobile.click('#next');await openDay(mobile,'2026-12-05');await scrollEdge(mobile,true);await scrollEdge(mobile,false);if(engine==='chromium'){await touchEdge(mobile,true);await touchEdge(mobile,false);}
+ await mobile.locator('#appt-legacy .appointment-pets').scrollIntoViewIfNeeded();await mobile.screenshot({path:resolve(out,'appointment-pets-mobile.png')});ok('Pet cards fit mobile planner',await mobile.locator('#appt-legacy .appointment-pets').evaluate(el=>el.scrollWidth<=el.clientWidth));
  await mobile.locator('[data-price-edit="legacy"]').click();ok('Mobile price form fits viewport',await mobile.locator('#price-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth));await mobile.screenshot({path:resolve(out,'legacy-agreed-price-mobile.png')});await mobile.locator('#price-dialog [data-close-price]').first().click();
  const customer=await page('selsey',390);await customer.goto('http://127.0.0.1:8788/bookings.html');await customer.waitForSelector('[data-add]');await customer.click('#next');await customer.locator('[data-edit="legacy"]').first().click();await customer.waitForSelector('dialog[aria-label="Agreed booking details"]');ok('Customer sees the saved legacy charge',(await customer.locator('dialog[aria-label="Agreed booking details"]').textContent()).includes('£35.00'));
  for(const old of originalUsers)ok('Existing account retained',JSON.stringify(db.prepare('SELECT * FROM users WHERE id=?').get(old.id))===JSON.stringify(old));for(const old of originalPets)ok('Existing pet retained',JSON.stringify(db.prepare('SELECT * FROM pets WHERE id=?').get(old.id))===JSON.stringify(old));ok('No receipts created',db.prepare('SELECT count(*) n FROM financial_events').get().n===0);ok('Verification account/booking retained in database',!!db.prepare('SELECT id FROM users WHERE id=?').get(verificationId)&&!!db.prepare("SELECT id FROM bookings WHERE id='verification'").get());ok('No page errors',errors.length===0);

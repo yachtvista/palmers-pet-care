@@ -220,3 +220,11 @@
 /* WebKit native select widgets otherwise shrink below a comfortable touch target. */
 .admin-calendar-page :is(.pp-fields,#personal-form,#scheduling-form,.calendar-toolbar) select{height:44px;min-height:44px;padding:.6rem .75rem;font:inherit;color:var(--navy);border:1px solid #cfd5e2;border-radius:9px;background-color:#fff}
 .admin-calendar-page .pp-close{min-width:44px;min-height:44px}
+
+/* A separate species-labelled frame for each pet included in an appointment. */
+.appointment-pets{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0 18px}
+.appointment-pet{--pet-species-colour:#697480;display:flex;align-items:center;gap:12px;min-width:0;max-width:100%;padding:10px;border:3px solid var(--pet-species-colour);border-radius:14px;background:#fff;box-sizing:border-box}
+.appointment-pet[data-species="Dog"]{--pet-species-colour:#3b7295}.appointment-pet[data-species="Cat"]{--pet-species-colour:#805aa6}.appointment-pet[data-species="Rabbit"]{--pet-species-colour:#3f7857}.appointment-pet[data-species="Guinea pig"]{--pet-species-colour:#92622f}.appointment-pet[data-species="Hamster"]{--pet-species-colour:#a25943}.appointment-pet[data-species="Bird"]{--pet-species-colour:#277b80}.appointment-pet[data-species="Reptile"]{--pet-species-colour:#687633}
+.appointment-pet-photo{width:88px;height:88px;flex:0 0 88px}.appointment-pet-photo img,.appointment-pet-placeholder{width:88px;height:88px;border-radius:8px;object-fit:cover}.appointment-pet-photo img{display:block}.appointment-pet-placeholder{display:grid;place-items:center;background:#f0f3f5;font-size:30px;font-weight:700;color:#53616b}
+.appointment-pet img[hidden],.appointment-pet-placeholder[hidden],.appointment-photo-note[hidden]{display:none}.appointment-pet strong,.appointment-pet span,.appointment-pet small{display:block;overflow-wrap:anywhere}.appointment-pet span,.appointment-pet small{font-size:12px;color:#53616b;margin-top:4px}.appointment-pet .appointment-pet-placeholder:not([hidden]){display:grid;margin:0;font-size:30px}
+@media(max-width:650px){.appointment-pet{width:100%}}
