@@ -319,6 +319,17 @@
   $('#override-confirm').onclick = () => { if (!busy) saveBooking(true); };
   $('#override-cancel').onclick = () => { $('#override-box').hidden = true; };
 
+  // Browser scroll chaining can stop at an inner boundary, especially over time slots.
+  // Pass only the unconsumed vertical wheel distance to this dialog, never the page.
+  $('#planner-scroll').addEventListener('wheel',e=>{
+    if(!dialog.open||e.ctrlKey||e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)||!e.cancelable)return;
+    const timeline=e.currentTarget,scale=e.deltaMode===1?16:e.deltaMode===2?timeline.clientHeight:1;
+    const distance=e.deltaY*scale,before=timeline.scrollTop,max=timeline.scrollHeight-timeline.clientHeight;
+    const next=Math.max(0,Math.min(max,before+distance)),remainder=distance-(next-before);
+    if(Math.abs(remainder)<.5)return;
+    e.preventDefault();timeline.scrollTop=next;dialog.scrollTop+=remainder;
+  },{passive:false});
+
   $('#planner-range').onchange=e=>{plannerRange=Number(e.target.value);renderDay();};
   for(const [id,delta] of [['day-prev',-1],['day-next',1]])$('#'+id).onclick=()=>openDay(S.dateOf(S.absAt(selected,'00:00')+delta*1440));
   $('#personal-form').addEventListener('change',e=>{if(e.target.name==='repeat')$('#repeat-count-label').hidden=!e.target.value;});
