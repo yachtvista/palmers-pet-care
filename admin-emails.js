@@ -1,0 +1,24 @@
+import {renderEmail} from './email-template.js';
+const $=id=>document.getElementById(id),API=['localhost','127.0.0.1'].includes(location.hostname)?'http://127.0.0.1:8787':'https://api.palmerspetcare.co.uk';
+let division,ownerId,job=null,busy=false,ready=false;
+async function call(path,body){const r=await fetch(API+path,{credentials:'include',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Please try again.');return data;}
+function values(){return {mode:$('email-mode').value,to:$('email-to').value.trim(),template:$('email-template').value,subject:$('email-subject').value.trim(),body:$('email-body').value.trim()};}
+function preview(){const v=values();$('email-preview').srcdoc=renderEmail({...v,subject:v.subject||'Your email title',body:v.body||'Your message will appear here.\n\nWith care,\nThe Palmer’s Pet Care team'},division).html;}
+function mode(){const bulk=$('email-mode').value==='bulk';$('recipient-field').hidden=bulk;$('email-to').required=!bulk;$('email-to').disabled=bulk;$('email-audience').textContent=bulk?'All registered users in '+division.name+'. Each person receives a private email; addresses are never shared.':'Send a private message to one email address.';$('email-send').textContent=bulk?'Review & send to all users':'Send email now';}
+$('email-mode').addEventListener('change',mode);
+$('email-form').addEventListener('input',preview);
+$('email-new').addEventListener('click',()=>{job=null;sessionStorage.removeItem('ppc-email-job');$('email-fields').disabled=false;$('email-new').hidden=true;$('email-send').hidden=false;$('email-send').disabled=false;$('email-status').textContent='';mode();});
+$('email-form').addEventListener('submit',async e=>{
+ e.preventDefault();if(!ready||busy)return;
+ if(!job){const v=values();if(!v.subject||!v.body){$('email-status').textContent='Enter an email title and message.';return;}job={id:crypto.randomUUID(),...v,ownerId,divisionId:division.id,prepared:false};}
+ busy=true;$('email-fields').disabled=true;$('email-send').disabled=true;$('email-new').hidden=true;
+ try{
+  if(!job.prepared){$('email-status').textContent='Preparing your email…';const prepared=await call('/admin/messages',job);job.prepared=true;job.total=prepared.total;job.sent=prepared.sent;sessionStorage.setItem('ppc-email-job',JSON.stringify(job));}
+  if(!job.confirmed){if(!window.confirm(`Send “${job.subject}” now to ${job.mode==='bulk'?job.total+' users in '+division.name:job.to}?`)){$('email-fields').disabled=false;job=null;sessionStorage.removeItem('ppc-email-job');$('email-status').textContent='Email not sent.';mode();return;}job.confirmed=true;sessionStorage.setItem('ppc-email-job',JSON.stringify(job));}
+  let done=false;
+  while(!done){$('email-status').textContent=`Sending… ${job.sent||0} of ${job.total} accepted.`;const result=await call('/admin/messages/'+job.id+'/send',{});job.sent=result.sent;done=result.done;sessionStorage.setItem('ppc-email-job',JSON.stringify(job));}
+  $('email-status').textContent=`${job.total===1?'Email':job.total+' emails'} accepted by Resend for delivery.`;$('email-send').hidden=true;$('email-new').hidden=false;sessionStorage.removeItem('ppc-email-job');
+ }catch(err){$('email-status').textContent=err.message;$('email-send').textContent='Retry sending';/* Keep the same message and reference for a safe retry. */}
+ finally{busy=false;$('email-send').disabled=false;}
+});
+(async()=>{try{const me=await call('/me');const role=me.memberships?.find(m=>m.id===me.activeDivision.id)?.role;if(role!=='admin'&&!me.isBrandOwner){$('email-access').textContent='This section is available to administrators only.';return;}ownerId=me.owner.id;division={...me.activeDivision,contactEmail:me.activeDivision.id==='selsey'?'enquiries@palmerspetcare.co.uk':null};const config=await call('/admin/division');division.contactEmail=config.division?.contactEmail||config.division?.contact_email||division.contactEmail;if(!division.contactEmail)throw new Error('Regional contact email could not load.');$('email-access').textContent='Sending as Palmer’s Pet Care · '+division.name;$('email-workspace').hidden=false;ready=true;mode();preview();try{const saved=JSON.parse(sessionStorage.getItem('ppc-email-job'));if(saved&&saved.ownerId===ownerId&&saved.divisionId===division.id){job=saved;for(const [key,id] of [['mode','email-mode'],['to','email-to'],['template','email-template'],['subject','email-subject'],['body','email-body']])$(id).value=job[key];$('email-fields').disabled=true;$('email-send').textContent='Resume sending';$('email-status').textContent='An unfinished email is ready to resume. Its recipients and message are preserved.';preview();}}catch{}}catch(e){$('email-access').textContent=e.message+' Please sign in with an administrator account.';}})();
