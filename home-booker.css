@@ -216,3 +216,9 @@ body.hb-page { background: var(--hb-bg); }
   25%, 100% { border-color: transparent; }
 }
 @media (prefers-reduced-motion: reduce) { .hb-page .trust div { animation: none; } }
+
+/* Highlight only selections still needed to enable Continue. */
+.hb-cal.hb-required, .hb-times.hb-required { outline: 2px solid var(--hb-err); outline-offset: -3px; border-radius: 10px; }
+.hb-times.hb-required .hb-tlist button { border-color: var(--hb-err); }
+.hb-required-note { margin: .75rem 0 0; font-size: .88rem; line-height: 1.5; color: var(--hb-green-dark); }
+.hb-required-note.is-missing { color: var(--hb-err); font-weight: 600; }

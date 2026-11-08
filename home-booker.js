@@ -124,6 +124,19 @@ window.HB = (() => {
     const price = av ? H.priceFor(av.services, slot, H.speciesList(slot.pets)) : null;
     $('#hbSumPrice').textContent = price == null ? '—' : H.money(price);
     $('#hbContinue').disabled = !av || !H.complete(slot);
+    const missingDate = !!av && !slot.date;
+    const missingTime = !!av && slot.svc !== 'sit' && !slot.start;
+    for (const [selector, missing] of [['.hb-cal', missingDate], ['.hb-times', missingTime]]) {
+      const group = $(selector);
+      group.classList.toggle('hb-required', missing);
+      group.setAttribute('aria-invalid', String(missing));
+    }
+    const note = $('#hbRequired');
+    note.classList.toggle('is-missing', missingDate || missingTime);
+    note.textContent = !av ? 'Loading available slots…'
+      : missingDate ? (slot.svc === 'sit' ? 'Choose an available night in the red-bordered calendar to continue.' : 'Choose a day and a start time in the red-bordered areas to continue.')
+      : missingTime ? 'Choose a start time in the red-bordered area to continue.'
+      : 'Your slot is selected — you can continue.';
   }
   function renderPc() {
     const v = (slot.pc || '').trim().toUpperCase(), n = $('#hbPcNote');
@@ -189,5 +202,6 @@ window.HB = (() => {
   }).catch(() => {
     cal.classList.remove('loading');
     $('#hbErr').hidden = false;
+    $('#hbRequired').textContent = 'Availability could not be loaded. Please refresh or contact us.';
   });
 })();

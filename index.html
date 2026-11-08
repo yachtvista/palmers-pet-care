@@ -8,7 +8,7 @@
   <link rel="icon" href="images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=brand-text-1">
-  <link rel="stylesheet" href="home-booker.css">
+  <link rel="stylesheet" href="home-booker.css?v=required-slot-1">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script src="traffic-beacon.js?v=browser-visits-2" defer></script>
 </head>
@@ -65,7 +65,7 @@
         </div>
         <p class="hb-note warn" id="hbPcNote" hidden></p>
         <div class="hb-cal-wrap">
-          <div class="hb-cal">
+          <div class="hb-cal" role="group" aria-label="Visit date" aria-describedby="hbRequired">
             <div class="hb-cal-head">
               <button type="button" id="hbPrev" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
               <span id="hbMonth" aria-live="polite"></span>
@@ -73,7 +73,7 @@
             </div>
             <div class="hb-grid7" id="hbCal"></div>
           </div>
-          <div class="hb-times">
+          <div class="hb-times" role="group" aria-label="Start time" aria-describedby="hbRequired">
             <h3 id="hbDay">Choose a day</h3>
             <p class="hint" id="hbHint">Available times</p>
             <div class="hb-tlist" id="hbTimes" aria-label="Available start times"></div>
@@ -84,7 +84,8 @@
           <div class="what" id="hbSumWhat"></div>
           <div class="hb-price" id="hbSumPrice"></div>
         </div>
-        <button class="hb-cta" id="hbContinue" type="button" disabled>Continue with this slot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+        <p class="hb-required-note" id="hbRequired" role="status" aria-live="polite" aria-atomic="true">Loading available slots…</p>
+        <button class="hb-cta" aria-describedby="hbRequired" id="hbContinue" type="button" disabled>Continue with this slot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
         <p class="hb-after">Next: create your account and add your pet’s details.</p>
         <div class="hb-fine"><span>New-client bookings are subject to confirmation.</span><span>Free meet and greet once approved.</span></div>
       </div>
@@ -299,7 +300,7 @@
 </script>
   <script src="cat-yarn.js" defer></script>
   <script src="booking-slots.js"></script>
-  <script src="home-booker.js?v=admin-first-20261107"></script>
+  <script src="home-booker.js?v=required-slot-1"></script>
   <script src="session-link.js" defer></script>
 </body>
 </html>
