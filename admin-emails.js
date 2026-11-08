@@ -1,4 +1,4 @@
-import {renderEmail} from './email-template.js';
+import {renderEmail} from './email-template.js?v=email-logo-1';
 const $=id=>document.getElementById(id),API=['localhost','127.0.0.1'].includes(location.hostname)?'http://127.0.0.1:8787':'https://api.palmerspetcare.co.uk';
 let division,ownerId,job=null,busy=false,ready=false;
 function deny(status){ready=false;$('email-admin-shell').hidden=true;location.replace(status===401?'login.html':'account.html');}
