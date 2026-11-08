@@ -222,3 +222,18 @@ body.hb-page { background: var(--hb-bg); }
 .hb-times.hb-required .hb-tlist button { border-color: var(--hb-err); }
 .hb-required-note { margin: .75rem 0 0; font-size: .88rem; line-height: 1.5; color: var(--hb-green-dark); }
 .hb-required-note.is-missing { color: var(--hb-err); font-weight: 600; }
+
+/* Guided homepage visit selection. */
+#hbBooker [hidden] { display:none!important; }
+.hb-wizard-status { font-size:.85rem;color:var(--hb-green-dark);font-weight:700;margin:1rem 0; }
+.hb-wizard-panel h3,.hb-slot-heading,.hb-visit-summary h3 { font-size:1.1rem;color:var(--hb-navy);margin:0 0 1rem; }
+.hb-wizard-panel label { display:block;font-size:.9rem;font-weight:600;margin:.6rem 0; }
+.hb-wizard-panel select,.hb-pet-counts input { width:100%;box-sizing:border-box;min-height:44px;border:1.5px solid var(--hb-line);border-radius:8px;background:white;color:var(--hb-ink);padding:.65rem;font:inherit; }
+.hb-pet-counts { display:flex;gap:1rem;margin:.7rem 0; }.hb-pet-counts label { flex:1;min-width:0; }.hb-pet-counts input { margin-top:.4rem; }
+.hb-wizard-actions { display:flex;justify-content:space-between;gap:1rem;margin-top:1rem; }
+.hb-wizard-actions button { border:1px solid var(--hb-green);background:white;color:var(--hb-green-dark);border-radius:8px;padding:.7rem 1rem;font:600 .95rem Manrope,'Segoe UI',sans-serif;cursor:pointer; }
+.hb-wizard-actions button:last-child { background:var(--hb-green);color:white; }
+.hb-visit-summary { background:var(--hb-green-soft);border:1px solid var(--hb-line);border-radius:12px;padding:1rem;margin:0 0 1.3rem; }
+.hb-visit-summary dl { margin:0; }.hb-visit-summary dl>div { display:grid;grid-template-columns:75px 1fr auto;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--hb-line); }.hb-visit-summary dt { font-size:.85rem;color:var(--hb-muted); }.hb-visit-summary dd { margin:0;font-size:.95rem;font-weight:600; }.hb-visit-summary button { border:0;background:transparent;color:var(--hb-green-dark);font:inherit;text-decoration:underline;cursor:pointer;min-height:36px; }.hb-visit-summary .hb-summary { padding:.5rem 0 0;background:transparent; }
+.hb-tlist button.hb-covered,.hb-tlist button.hb-covered:disabled { background:var(--hb-green);color:white;border-color:var(--hb-green);opacity:1; }.hb-tlist button:disabled:not(.hb-covered) { color:#7b8187;background:#eee;border-color:#ddd;cursor:not-allowed; }.hb-tlist button small { display:block;font-size:.65rem;line-height:1.2; }
+.hb-coverage { margin-top:.8rem;border:1px solid var(--hb-green);background:var(--hb-green-soft);padding:.8rem;border-radius:10px; }.hb-coverage p { margin:0 0 .5rem;font-size:.95rem; }.hb-duration-blocks { display:flex;gap:3px;overflow-x:auto;padding-bottom:.3rem; }.hb-duration-blocks span { flex:0 0 auto;background:var(--hb-green);color:white;border-radius:4px;padding:.4rem;font-size:.75rem; }.hb-duration-blocks small { display:block; }.hb-wizard-panel h3:focus,.hb-slot-heading:focus { outline:0; }

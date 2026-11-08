@@ -195,7 +195,7 @@
     const btn = $('#bkSend'); btn.disabled = true; status('review', '');
     const pets = chosenPets();
     try {
-      await api('/me/bookings', 'POST', { date: slot.date, start: slot.svc === 'sit' ? S.OVERNIGHT_START : slot.start, activities: [H.productId(slot)], petIds: pets.map((p) => p.id) });
+      await api('/me/bookings', 'POST', { date: slot.date, start: slot.svc === 'sit' ? S.OVERNIGHT_START : slot.start, activities: H.products(slot), petIds: pets.map((p) => p.id) });
       $('#bkDoneLine').textContent = `${H.svcLabel(slot)} for ${pets.map((p) => p.name).join(', ')}, ${H.whenLabel(slot)}. We’ll email you a copy.`;
       H.clear(); slot = null;
       show('done');
