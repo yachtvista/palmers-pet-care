@@ -536,6 +536,7 @@
       const customerCard = (c) => `
         <section class="pp-customer" data-customer="${esc(c.id)}">
           ${ownerCard(c)}
+          ${c.canDelete ? `<div class="pp-tools"><button type="button" class="pp-btn pp-btn-danger" data-delete-customer="${esc(c.id)}">Delete customer</button></div>` : ''}
           ${c.pets.map(petBlock).join('') || '<p class="pp-empty">No pet on record.</p>'}
         </section>`;
       const host = $('[data-customers]');
@@ -570,11 +571,22 @@
         const needle = query.trim().toLowerCase();
         const rows = d.customers.filter((c) => !needle || [c.name, c.email, c.phone, ...c.pets.map((p) => p.name + ' ' + p.species)].join(' ').toLowerCase().includes(needle));
         $('[data-count]').textContent = (needle ? rows.length + ' of ' : '') + d.customers.length + (d.customers.length === 1 ? ' registered user' : ' registered users');
-        directory.innerHTML = `<h2>Registered users</h2><div class="pp-user-table-wrap"><table class="pp-user-table"><caption class="pp-user-caption">${needle ? 'Users matching your search' : 'All registered users, including those without pets'}</caption><thead><tr><th scope="col">Name</th><th scope="col">Email address</th><th scope="col">Pets</th><th scope="col">Details</th></tr></thead><tbody>${rows.map((c, i) => `<tr><th scope="row">${esc(c.name || 'Name not provided')}</th><td>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : 'Email not provided'}</td><td>${c.pets.length ? c.pets.map((p) => `${esc(p.name)}${p.species ? ' (' + esc(p.species) + ')' : ''}<small class="pp-pet-dob">Date of birth: ${esc(birthDateText(p.dateOfBirth))}</small>`).join('<br>') : 'No pets registered'}</td><td><a href="#registered-user-${i}" aria-label="View details for ${esc(c.name || c.email)}">View details</a></td></tr>`).join('') || `<tr><td colspan="4">${needle ? 'No users match your search.' : 'No registered users yet.'}</td></tr>`}</tbody></table></div>`;
+        directory.innerHTML = `<h2>Registered users</h2><div class="pp-user-table-wrap"><table class="pp-user-table"><caption class="pp-user-caption">${needle ? 'Users matching your search' : 'All registered users, including those without pets'}</caption><thead><tr><th scope="col">Name</th><th scope="col">Email address</th><th scope="col">Pets</th><th scope="col">Details</th></tr></thead><tbody>${rows.map((c, i) => `<tr><th scope="row">${esc(c.name || 'Name not provided')}</th><td>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : 'Email not provided'}</td><td>${c.pets.length ? c.pets.map((p) => `${esc(p.name)}${p.species ? ' (' + esc(p.species) + ')' : ''}<small class="pp-pet-dob">Date of birth: ${esc(birthDateText(p.dateOfBirth))}</small>`).join('<br>') : 'No pets registered'}</td><td><a href="#registered-user-${i}" aria-label="View details for ${esc(c.name || c.email)}">View details</a>${c.canDelete ? `<button type="button" class="pp-btn ghost pp-delete-customer" data-delete-customer="${esc(c.id)}">Delete customer</button>` : ''}</td></tr>`).join('') || `<tr><td colspan="4">${needle ? 'No users match your search.' : 'No registered users yet.'}</td></tr>`}</tbody></table></div>`;
         host.innerHTML = rows.map(customerCard).join('') || '<p class="pp-empty">No customers match.</p>';
         host.querySelectorAll('[data-customer]').forEach((card, i) => { card.id = 'registered-user-' + i; });
       };
       render();
+      const deleteDialog=$('#delete-customer-dialog');let deleteTarget=null,deletingCustomer=false;
+      const openDelete=e=>{const button=e.target.closest('[data-delete-customer]');if(!button)return;const customer=d.customers.find(c=>c.id===button.dataset.deleteCustomer);if(!customer?.canDelete)return;deleteTarget=customer;$('#delete-customer-name').textContent=(customer.name||'Customer')+' ('+customer.email+')';$('#delete-customer-status').textContent='';deleteDialog.showModal();$('#delete-customer-no').focus();};
+      host.addEventListener('click',openDelete);directory.addEventListener('click',openDelete);
+      $('#delete-customer-no').addEventListener('click',()=>{if(deletingCustomer)return;deleteTarget=null;deleteDialog.close();});
+      deleteDialog.addEventListener('cancel',e=>{if(deletingCustomer)e.preventDefault();else deleteTarget=null;});
+      $('#delete-customer-yes').addEventListener('click',async()=>{
+        if(deletingCustomer||!deleteTarget)return;const customer=deleteTarget;deletingCustomer=true;$('#delete-customer-yes').disabled=true;$('#delete-customer-no').disabled=true;$('#delete-customer-status').textContent='Deleting customer and pet data…';
+        try{await api('/admin/customers/'+encodeURIComponent(customer.id),{method:'DELETE',body:{confirmation:true,email:customer.email}});d.customers=d.customers.filter(c=>c.id!==customer.id);d.count=d.customers.length;for(const pet of customer.pets)extras.delete(pet.id);deleteTarget=null;deleteDialog.close();renderBirthdays();render();$('#customer-action-status').textContent=(customer.name||customer.email)+' and their pet data have been deleted.';$('[data-search]').focus();}
+        catch(err){$('#delete-customer-status').textContent=err.message;}
+        finally{deletingCustomer=false;$('#delete-customer-yes').disabled=false;$('#delete-customer-no').disabled=false;}
+      });
       birthdays.addEventListener('click', (e) => {
         const button = e.target.closest('[data-birthday-pet]'); if (!button) return;
         query = ''; $('[data-search]').value = ''; render();

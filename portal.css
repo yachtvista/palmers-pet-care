@@ -300,3 +300,5 @@ img.pp-avatar { object-fit: cover; }
 .pp-preference:focus-within { outline: 3px solid #6950e8; outline-offset: 2px; }
 .pp-preferences button { min-height: 44px; }
 @media (max-width: 500px) { .pp-preferences { padding: 1rem; } .pp-preference { padding: .8rem; } }
+
+.pp-btn.pp-btn-danger{background:#9b2c2c;color:#fff;border-color:#9b2c2c}.pp-delete-customer{display:block;margin-top:.6rem;color:#9b2c2c!important}#delete-customer-dialog{max-width:560px}#delete-customer-warning{line-height:1.65}#delete-customer-status{overflow-wrap:anywhere}
