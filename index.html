@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=picker-refine-20261109">
   <link rel="stylesheet" href="home-booker.css?v=deposit-notice-20261109">
+  <link rel="stylesheet" href="BookingReassurancePanel.css?v=20261109">
+  <script src="BookingReassurancePanel.js?v=20261109" defer></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script src="traffic-beacon.js?v=browser-visits-2" defer></script>
 </head>
@@ -45,6 +47,7 @@
         <p class="hb-proof"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5c.6 5.6 4.9 9.9 10.5 10.5-5.6.6-9.9 4.9-10.5 10.5C11.4 16.9 7.1 12.6 1.5 12 7.1 11.4 11.4 7.1 12 1.5Z"/></svg><span><b>One familiar person.</b> Care that feels like home.</span></p>
       </div>
 
+      <div class="hb-booking-column">
       <div class="hb-card" id="hbBooker" aria-labelledby="hbTitle">
         <h2 id="hbTitle">Let’s plan their next visit</h2>
         <p class="hb-sub">Find a time and see your price before signing up.</p>
@@ -81,6 +84,25 @@
         <p class="hb-after">Next: create your account and add your pet’s details.</p>
         </section>
         <div class="hb-fine"><span>New-client bookings are subject to confirmation.</span><span>Free meet and greet once approved.</span></div>
+      </div>
+      <!-- BookingReassurancePanel: static, reusable presentation; the existing brand identity supplies local wording. -->
+      <section class="BookingReassurancePanel" aria-labelledby="booking-reassurance-title">
+        <h2 id="booking-reassurance-title">A little reassurance goes a long way</h2>
+        <p class="brp-description">Everything is designed to help you feel confident before your first confirmed visit.</p>
+        <ul class="brp-benefits">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg><span>Personal care</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-13 5 3 3 5-5"/></svg><span>Easy booking</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/></svg><span>See your price</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="5" width="20" height="15" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 17c0-4 6-4 6 0m4-7h4m-4 4h4"/></svg><span>Tell us about your pets</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m1-16a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v2"/></svg><span>Free meet &amp; greet</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 10 5-10 5L2 8Zm-10 9 10 5 10-5M2 16l10 5 10-5"/></svg><span>Routine-led visits</span></li>
+        </ul>
+        <p class="brp-introduction">A friendly introduction before your first confirmed visit.</p>
+        <div class="brp-footer">
+          <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg><span data-reassurance-location>Local, trusted care</span></p>
+          <p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg><span>Updates and confirmations before service begins</span></p>
+        </div>
+      </section>
       </div>
     </div>
   </section>
