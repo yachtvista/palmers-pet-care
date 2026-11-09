@@ -242,3 +242,5 @@ body.hb-page { background: var(--hb-bg); }
 #hbBooker .hb-svc{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}#hbBooker .hb-svc button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;font-size:.95rem}#hbBooker .hb-svc small{font-size:.73rem;color:var(--hb-muted);font-weight:400}#hbWeekly{margin:1rem 0;padding:1rem;background:var(--hb-green-soft);border-radius:10px}#hbWeeklyList{padding-left:1.3rem;font-size:.9rem}#hbWeeklyList button{margin-left:.5rem;border:0;background:transparent;text-decoration:underline;color:var(--hb-err);cursor:pointer}.hb-price{white-space:normal}.hb-service-description{font-size:.85rem;line-height:1.5;color:var(--hb-muted)}
 
 #hbBooker,.hb-hero-grid>div,#hbSlotStep,.hb-coverage,.hb-duration-blocks{min-width:0;box-sizing:border-box}#hbBooker{max-width:100%}.hb-duration-blocks{width:100%;max-width:100%}.hb-coverage{max-width:100%}
+
+#hbDurationHelp { font-size: 1.12rem; }
