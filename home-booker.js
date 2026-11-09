@@ -112,10 +112,10 @@ window.HB = (() => {
   if (!['walk','popdog','popcat','daycare','evening','sit','stay24'].includes(slot.svc)) slot = H.blank();
   if(!Number.isInteger(slot.len)||slot.len<30||slot.len>540||slot.len%30)slot.len=30;
   if(slot.svc==='walk'&&![30,60].includes(slot.len))slot.len=30;
-  if (slot.svc === 'walk' && !/^d([1-9]|10)$/.test(slot.pets)) slot.pets = 'd1';
+  if(slot.svc==='walk'&&!/^d[1-4]$/.test(slot.pets)){slot.pets='d1';slot.wizardStep=3;delete slot.flow;delete slot.view;}
   let step = slot.wizardVersion === 1 ? Math.min(4, Math.max(1, Number(slot.wizardStep)||1)) : 1;
   let month = null;
-  const cal = $('.hb-cal-wrap'), serviceNames = {walk:'Dog walking',popdog:'Dog pop-in',popcat:'Cat pop-in',daycare:'Daytime Stay & Play',evening:'Evening Stay & Play',sit:'Overnight care',stay24:'24-hour care packages'};
+  const cal = $('.hb-cal-wrap'), serviceNames = {walk:'Dog walking',popdog:'Pop-in',popcat:'Pop-in',daycare:'Daytime Stay & Play',evening:'Evening Stay & Play',sit:'Overnight care',stay24:'24-hour care packages'};
   const persist = () => { slot.wizardVersion=1; slot.wizardStep=step; H.save(slot); };
   const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const dayFree = date => H.slotStarts(av,slot,date).length>0 && (!slot.weekly || (!(slot.slots||[]).some(s=>s.date===date)&&(!(slot.slots||[]).length||Math.max(...slot.slots.map(s=>H.S.dayNum(s.date)),H.S.dayNum(date))-Math.min(...slot.slots.map(s=>H.S.dayNum(s.date)),H.S.dayNum(date))<=6)));
@@ -135,12 +135,17 @@ window.HB = (() => {
     for(const [key,field,input] of [['d','hbDogField','hbDogs'],['c','hbCatField','hbCats'],['s','hbSmallField','hbSmall']]){
       $('#'+field).hidden=!type.includes(key);$('#'+input).disabled=!type.includes(key);
     }
+    dogCaveat();
+  }
+  function dogCaveat(){
+    $('#hbDogSizeNote').hidden=slot.svc!=='walk'||Number($('#hbDogs').value)<3;
   }
   function readPets() {
     const type=$('#hbSpecies').value; let key='';
     for(const [code,id] of [['d','hbDogs'],['c','hbCats'],['s','hbSmall']])if(type.includes(code)){
       const el=$('#'+id),n=Number(el.value);
-      if(!Number.isInteger(n)||n<1||n>10){$('#hbPetError').hidden=false;$('#hbPetError').textContent='Enter between 1 and 10 for each selected pet species.';el.focus();return false;}
+      const max=slot.svc==='walk'&&code==='d'?4:10;
+      if(!Number.isInteger(n)||n<1||n>max){$('#hbPetError').hidden=false;$('#hbPetError').textContent='Choose between 1 and '+max+' for each selected pet species.';el.focus();return false;}
       key+=code+n;
     }
     if(slot.pets!==key){delete slot.flow;delete slot.view;}
@@ -152,18 +157,27 @@ window.HB = (() => {
   }
   function render() {
     ['hbServiceStep','hbDurationStep','hbPetsStep','hbSlotStep'].forEach((id,i)=>$('#'+id).hidden=step!==i+1);
-    $('#hbWizardStatus').textContent='Step '+step+' of 4 · '+['Choose your service','Choose the duration','Tell us about your pets','Choose a date and time'][step-1];
-    $$('.hb-svc button').forEach(b=>b.setAttribute('aria-pressed',String(step!==1&&b.dataset.svc===slot.svc)));
+    $('#hbWizardStatus').textContent='Step '+step+' of 4 · '+['Choose your service',['popdog','popcat'].includes(slot.svc)?'Choose dog or cat':'Choose the duration',slot.svc==='walk'?'Choose the number of dogs':'Tell us about your pets','Choose a date and time'][step-1];
+    $$('.hb-svc button').forEach(b=>b.setAttribute('aria-pressed',String(step!==1&&(b.dataset.svc===slot.svc||b.dataset.svc==='popin'&&['popdog','popcat'].includes(slot.svc)))));
     const lenSel=$('#hbLen');
-    const lengths=slot.svc==='walk'?[['30','30 minutes · £15'],['60','60 minutes · £20'],['week','Weekly package · 5 × 30 minutes · £65']]:slot.svc==='daycare'?Array.from({length:18},(_,i)=>[String((i+1)*30),H.S.durationLabel((i+1)*30)+' · £85']):slot.svc==='stay24'?[100,190,270,340,400].map((p,i)=>[String(i+1),(i+1)+' day(s) & night(s) · £'+p+' for 1 dog / £'+(p+(i+1)*10)+' for 2 dogs']):[[String(H.minutes(slot)),H.S.durationLabel(H.minutes(slot))+' · '+H.money(H.offer(slot)?.rate)]];
-    lenSel.innerHTML=lengths.map(([v,label])=>`<option value="${v}">${label}</option>`).join('');lenSel.value=slot.weekly?'week':String(slot.svc==='stay24'?(slot.days||1):H.minutes(slot));lenSel.disabled=lengths.length===1;
+    const lengths=slot.svc==='walk'?[['30','30 minutes · £15'],['60','60 minutes · £20'],['week','Weekly package · 5 × 30 minutes · £65']]:slot.svc==='daycare'?[['daycare','Daytime Stay & Play · £85 · up to 9 hours']]:slot.svc==='stay24'?[100,190,270,340,400].map((p,i)=>[String(i+1),(i+1)+' day(s) & night(s) · £'+p+' for 1 dog / £'+(p+(i+1)*10)+' for 2 dogs']):[[String(H.minutes(slot)),H.S.durationLabel(H.minutes(slot))+' · '+H.money(H.offer(slot)?.rate)]];
+    lenSel.innerHTML=lengths.map(([v,label])=>`<option value="${v}">${label}</option>`).join('');lenSel.value=slot.svc==='daycare'?'daycare':slot.weekly?'week':String(slot.svc==='stay24'?(slot.days||1):H.minutes(slot));lenSel.disabled=lengths.length===1;
+    const popin=['popdog','popcat'].includes(slot.svc);
+    $('#hbMainDurationField').hidden=popin;$('#hbPopSpeciesField').hidden=!popin;$('#hbPopSpecies').value=popin?slot.svc:'popdog';
+    $('#hbStayDurationField').hidden=slot.svc!=='daycare';
+    $('#hbStayDuration').innerHTML=Array.from({length:18},(_,i)=>`<option value="${(i+1)*30}">${H.S.durationLabel((i+1)*30)}</option>`).join('');$('#hbStayDuration').value=String(slot.len);
+    $('#hbLenLabel').textContent=slot.svc==='daycare'?'Package':slot.svc==='walk'?'Dog walk (dogs only)':'Visit duration';
+    $('#hbDurationTitle').textContent=popin?'2. Who is the pop-in for?':'2. How long do you need?';
+    $('#hbPetsTitle').textContent=slot.svc==='walk'?'3. How many dogs?':'3. Which pets are we caring for?';
+    $('#hbSpeciesField').hidden=slot.svc==='walk'||popin;
     $('#hbDurationHelp').textContent=H.offer(slot)?.description||'';
     const counts=H.petCounts(slot.pets),allowed=slot.svc==='popcat'?[['c','Cats']]:slot.svc==='sit'?[['d','Dogs'],['c','Cats'],['dc','Dogs and cats'],['s','Small pets']]:[['d','Dogs only']];
     const type=allowed.some(([v])=>v===(counts.dog&&counts.cat?'dc':counts.cat?'c':counts.small?'s':'d'))?(counts.dog&&counts.cat?'dc':counts.cat?'c':counts.small?'s':'d'):allowed[0][0];
     $('#hbSpecies').innerHTML=allowed.map(([v,label])=>`<option value="${v}">${label}</option>`).join('');$('#hbSpecies').value=type;
+    const dogLimit=slot.svc==='walk'?4:10;$('#hbDogs').innerHTML=Array.from({length:dogLimit},(_,i)=>`<option value="${i+1}">${i+1} dog${i?'s':''}${slot.svc==='walk'&&i>=2?' — depending on size':''}</option>`).join('');
     $('#hbDogs').value=counts.dog||1;$('#hbCats').value=counts.cat||1;$('#hbSmall').value=counts.small||1;petFields();
     $('#hbPc').value=slot.pc||'';renderPc();
-    $('#hbReviewService').textContent=serviceNames[slot.svc];$('#hbReviewDuration').textContent=slot.weekly?'5 × 30-minute walks':H.S.durationLabel(H.minutes(slot));$('#hbReviewPets').textContent=H.petsLabel(slot);
+    $('#hbReviewService').textContent=serviceNames[slot.svc];$('#hbReviewDuration').textContent=slot.weekly?'5 × 30-minute walks':H.S.durationLabel(H.minutes(slot));$('#hbReviewPets').textContent=H.petsLabel(slot);$('#hbReviewDogNote').hidden=slot.svc!=='walk'||counts.dog<3;
     $('#hbSumWhat').textContent=slot.start||slot.svc==='sit'&&slot.date?H.whenLabel(slot):'Choose a date and start time below';
     const price=H.priceFor(av?.services||[],slot,H.speciesList(slot.pets));$('#hbSumPrice').textContent=price==null?'Request a quote':H.money(price);
     $('#hbQuote').hidden=price!==null;$('#hbContinue').hidden=price===null;
@@ -206,8 +220,11 @@ window.HB = (() => {
     }
     const on=t.querySelector('[aria-pressed="true"]');if(on)t.scrollTop=Math.max(0,on.offsetTop-t.offsetTop-50);
   }
-  $$('.hb-svc button').forEach(b=>b.addEventListener('click',()=>{const changed=slot.svc!==b.dataset.svc;slot.svc=b.dataset.svc;if(changed){slot.start=null;slot.date=null;slot.pets=slot.svc==='popcat'?'c1':'d1';slot.weekly=false;slot.slots=[];slot.len=slot.svc==='daycare'?540:30;slot.days=1;delete slot.flow;delete slot.view;}keepValid();go(2);}));
+  $$('.hb-svc button').forEach(b=>b.addEventListener('click',()=>{const next=b.dataset.svc==='popin'?(['popdog','popcat'].includes(slot.svc)?slot.svc:'popdog'):b.dataset.svc;const changed=slot.svc!==next;slot.svc=next;if(changed){slot.start=null;slot.date=null;slot.pets=slot.svc==='popcat'?'c1':'d1';slot.weekly=false;slot.slots=[];slot.len=slot.svc==='daycare'?540:30;slot.days=1;delete slot.flow;delete slot.view;}keepValid();go(2);}));
   $('#hbLen').addEventListener('change',e=>{slot.weekly=e.target.value==='week';if(slot.svc==='stay24')slot.days=Number(e.target.value);else if(!slot.weekly)slot.len=Number(e.target.value);slot.slots=[];slot.start=null;keepValid();persist();render();});
+  $('#hbStayDuration').addEventListener('change',e=>{slot.len=Number(e.target.value);slot.start=null;keepValid();persist();render();});
+  $('#hbPopSpecies').addEventListener('change',e=>{slot.svc=e.target.value;slot.pets=slot.svc==='popcat'?'c1':'d1';delete slot.flow;delete slot.view;keepValid();persist();render();});
+  $('#hbDogs').addEventListener('change',dogCaveat);
   $('#hbDurationNext').addEventListener('click',()=>go(3));
   $('#hbSpecies').addEventListener('change',petFields);
   $('#hbPetsNext').addEventListener('click',()=>{if(!readPets())return;slot.pc=$('#hbPc').value.slice(0,10);keepValid();go(4);});
