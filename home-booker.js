@@ -17,33 +17,44 @@ window.HB = (() => {
   const speciesList = (k) => { const c = petCounts(k); return [...Array(c.dog).fill('Dog'), ...Array(c.cat).fill('Cat'), ...Array(c.small).fill('Other')]; };
   const petsLabel = (slot) => { const c = petCounts(slot.pets); return [[c.dog,'dog'],[c.cat,'cat'],[c.small,'small pet']].filter(([n])=>n).map(([n,label])=>`${n} ${label}${n===1?'':'s'}`).join(', '); };
 
-  const productId = (slot) => slot.svc === 'sit' ? 'sitting' : (slot.svc === 'walk' ? 'walk' : 'visit') + slot.len;
-  const products = (slot) => slot.svc === 'sit' ? ['sitting'] : [...Array(Math.floor(slot.len / 60)).fill(slot.svc === 'walk' ? 'walk60' : 'visit60'), ...(slot.len % 60 ? [slot.svc === 'walk' ? 'walk30' : 'visit30'] : [])];
-  const svcLabel = (slot) => slot.svc === 'sit' ? 'Overnight house-sit' : S.durationLabel(slot.len) + ' ' + (slot.svc === 'walk' ? 'walk' : 'home visit');
-  const money = (p) => '£' + (Number(p || 0) / 100).toFixed(2);
-  const longDay = (date) => new Date(date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' });
-  function whenLabel(slot) {
-    if (!slot.date) return '';
-    if (slot.svc === 'sit') return longDay(slot.date) + ' · 20:00–08:00';
-    return slot.start ? longDay(slot.date) + ' · ' + slot.start + '–' + S.toHHMM(S.toMin(slot.start) + slot.len) : '';
+  const P = window.PPCPrices;
+  const offerId=slot=>slot.svc==='walk'?(slot.weekly?'walkweek':'walk'+slot.len):slot.svc==='sit'?'sitting':slot.svc==='stay24'?'stay24_'+(slot.days||1):slot.svc==='daycare'?'daycare_'+slot.len:slot.svc;
+  const offer=slot=>P.PRODUCTS.find(s=>s.id===offerId(slot))||P.CATALOG.find(s=>s.id===offerId(slot));
+  const productId=offerId;
+  const products=slot=>[slot.weekly?'walk30':offerId(slot)];
+  const minutes=slot=>offer(slot)?.minutes||30;
+  const svcLabel=slot=>offer(slot)?.name||'Pet care';
+  const money=p=>'£'+(Number(p||0)/100).toFixed(2);
+  const longDay=date=>new Date(date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'});
+  function whenLabel(slot){
+    if(slot.weekly)return (slot.slots||[]).map(s=>longDay(s.date)+' '+s.start+'–'+S.toHHMM(S.toMin(s.start)+30)).join('; ');
+    if(!slot.date||!slot.start)return '';
+    const end=S.absAt(slot.date,slot.start)+minutes(slot);
+    return longDay(slot.date)+' · '+slot.start+'–'+S.timeOf(end)+(S.dateOf(end)!==slot.date?' '+longDay(S.dateOf(end)):'');
   }
-
-  // Price for one product and a list of species, dogs first — the order book.js sends petIds in, so the
-  // estimate matches what the API charges (extraFor in src/index.js).
-  function priceFor(services, slot, species) {
-    let total = 0;
-    for (const id of products(slot)) {
-      const sv = (services || []).find((s) => s.id === id);
-      if (!sv) return null;
-      const pets = species.slice().sort((a, b) => (b === 'Dog') - (a === 'Dog'));
-      let extra;
-      if (sv.id === 'sitting') extra = pets.slice(1).reduce((n, sp) => n + (sp === 'Dog' ? 800 : sp === 'Cat' ? 400 : 0), 0);
-      else if (sv.kind === 'visit') extra = sv.extra * pets.slice(1).filter((sp) => sp !== 'Dog').length;
-      else extra = sv.extra * Math.max(0, pets.length - 1);
-      total += sv.rate + extra;
+  function priceFor(services,slot,species){
+    const base=offer(slot);if(!base)return null;
+    const service=slot.weekly?base:{...base,...((services||[]).find(s=>s.id===base.id)||{})};
+    return P.catalogPrice(service,species);
+  }
+  function slotStarts(av,slot,date){
+    if(!av||!date)return [];
+    const closed=new Set((av.availability||[]).map(d=>d.date));
+    const service=offer(slot);if(!service)return [];
+    const duration=minutes(slot),out=[];
+    for(let m=S.toMin(S.OPEN);m<=S.toMin(S.CLOSE);m+=30){
+      const start=S.toHHMM(m);if(service.fixedStart&&service.fixedStart!==start)continue;
+      const id=slot.weekly?'walk30':service.id;
+      if(S.planError(date,start,[id]))continue;
+      const a=S.absAt(date,start),z=a+duration;
+      if(a<S.absAt(av.today.date,av.today.time))continue;
+      let unavailable=false;for(let d=Math.floor(a/1440);d<=Math.floor((z-1)/1440);d++)if(closed.has(S.dateOf(d*1440)))unavailable=true;
+      if(unavailable||(av.busy||[]).some(b=>a<b.endAt&&b.startAt<z))continue;
+      out.push(start);
     }
-    return total;
+    return out;
   }
+  const isFree=(av,slot)=>slot.weekly?(slot.slots||[]).length===5&&(slot.slots||[]).every(s=>slotStarts(av,slot,s.date).includes(s.start)):slotStarts(av,slot,slot.date).includes(slot.start);
 
   const blank = () => ({ svc: 'walk', len: 30, pets: 'd1', pc: '', date: null, start: null });
   function load() {
@@ -55,7 +66,7 @@ window.HB = (() => {
   }
   function save(slot) { try { localStorage.setItem(KEY, JSON.stringify({ ...slot, savedAt: Date.now() })); } catch (e) { /* storage blocked */ } }
   function clear() { try { localStorage.removeItem(KEY); } catch (e) { /* storage blocked */ } }
-  const complete = (slot) => !!(slot && slot.date && (slot.svc === 'sit' || slot.start));
+  const complete = slot => !!(slot&&(slot.weekly?(slot.slots||[]).length===5:slot.date&&slot.start));
 
   async function availability() {
     const r = await fetch(API + '/public/availability', { credentials: 'omit' });
@@ -78,7 +89,7 @@ window.HB = (() => {
     };
   }
 
-  return { S, API, KEY, PET_OPTS, petCounts, speciesList, petsLabel, productId, products, svcLabel, whenLabel, longDay, money, priceFor, blank, load, save, clear, complete, availability, dayInfo };
+  return { S, API, KEY, PET_OPTS, petCounts, speciesList, petsLabel, productId, products, offer, minutes, slotStarts, isFree, svcLabel, whenLabel, longDay, money, priceFor, blank, load, save, clear, complete, availability, dayInfo };
 })();
 
 /* ---------- homepage hero booker ---------- */
@@ -98,20 +109,21 @@ window.HB = (() => {
   if (!root) return;
 
   let av = null, failed = false, slot = H.load() || H.blank();
-  if (!['walk','visit','sit'].includes(slot.svc)) slot = H.blank();
-  if (!Number.isInteger(slot.len) || slot.len < 30 || slot.len > 780 || slot.len % 30) slot.len = 30;
+  if (!['walk','popdog','popcat','daycare','evening','sit','stay24'].includes(slot.svc)) slot = H.blank();
+  if(!Number.isInteger(slot.len)||slot.len<30||slot.len>540||slot.len%30)slot.len=30;
+  if(slot.svc==='walk'&&![30,60].includes(slot.len))slot.len=30;
   if (slot.svc === 'walk' && !/^d([1-9]|10)$/.test(slot.pets)) slot.pets = 'd1';
   let step = slot.wizardVersion === 1 ? Math.min(4, Math.max(1, Number(slot.wizardStep)||1)) : 1;
   let month = null;
-  const cal = $('.hb-cal-wrap'), serviceNames = {walk:'Dog walking',visit:'Home visits',sit:'House-sitting'};
+  const cal = $('.hb-cal-wrap'), serviceNames = {walk:'Dog walking',popdog:'Dog pop-in',popcat:'Cat pop-in',daycare:'Daytime Stay & Play',evening:'Evening Stay & Play',sit:'Overnight care',stay24:'24-hour care packages'};
   const persist = () => { slot.wizardVersion=1; slot.wizardStep=step; H.save(slot); };
   const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const dayFree = date => { const i=H.dayInfo(av,date); return slot.svc==='sit'?i.night():i.starts(slot.len).length>0; };
+  const dayFree = date => H.slotStarts(av,slot,date).length>0 && (!slot.weekly || (!(slot.slots||[]).some(s=>s.date===date)&&(!(slot.slots||[]).length||Math.max(...slot.slots.map(s=>H.S.dayNum(s.date)),H.S.dayNum(date))-Math.min(...slot.slots.map(s=>H.S.dayNum(s.date)),H.S.dayNum(date))<=6)));
   function keepValid() {
     if (!av || !slot.date) return;
     if (slot.date<av.today.date || !dayFree(slot.date)) {slot.date=null;slot.start=null;return;}
-    if (slot.svc==='sit') slot.start=null;
-    else if(slot.start&&!H.dayInfo(av,slot.date).starts(slot.len).includes(slot.start))slot.start=null;
+    if(slot.start&&!H.slotStarts(av,slot,slot.date).includes(slot.start))slot.start=null;
+    const fixed=H.offer(slot)?.fixedStart;if(fixed)slot.start=fixed;
   }
   function go(n) {
     step=n;persist();render();
@@ -142,22 +154,30 @@ window.HB = (() => {
     ['hbServiceStep','hbDurationStep','hbPetsStep','hbSlotStep'].forEach((id,i)=>$('#'+id).hidden=step!==i+1);
     $('#hbWizardStatus').textContent='Step '+step+' of 4 · '+['Choose your service','Choose the duration','Tell us about your pets','Choose a date and time'][step-1];
     $$('.hb-svc button').forEach(b=>b.setAttribute('aria-pressed',String(step!==1&&b.dataset.svc===slot.svc)));
-    const lenSel=$('#hbLen');lenSel.innerHTML=slot.svc==='sit'?'<option value="720">Overnight · 20:00–08:00 (12 hours)</option>':Array.from({length:26},(_,i)=>{const n=(i+1)*30;return `<option value="${n}">${H.S.durationLabel(n)}</option>`;}).join('');
-    lenSel.value=String(slot.svc==='sit'?720:slot.len);lenSel.disabled=slot.svc==='sit';
-    $('#hbDurationHelp').textContent=slot.svc==='sit'?'A fixed overnight stay, from 20:00 until 08:00 the next day.':'Choose in half-hour steps. We’ll only show starts with enough time for the whole visit.';
-    const counts=H.petCounts(slot.pets),type=slot.svc==='walk'?'d':counts.dog&&counts.cat?'dc':counts.cat?'c':counts.small?'s':'d';
-    $('#hbSpecies').innerHTML=(slot.svc==='walk'?[['d','Dogs only']]:[['d','Dogs'],['c','Cats'],['dc','Dogs and cats'],['s','Small pets']]).map(([v,label])=>`<option value="${v}">${label}</option>`).join('');$('#hbSpecies').value=type;
+    const lenSel=$('#hbLen');
+    const lengths=slot.svc==='walk'?[['30','30 minutes · £15'],['60','60 minutes · £20'],['week','Weekly package · 5 × 30 minutes · £65']]:slot.svc==='daycare'?Array.from({length:18},(_,i)=>[String((i+1)*30),H.S.durationLabel((i+1)*30)+' · £85']):slot.svc==='stay24'?[100,190,270,340,400].map((p,i)=>[String(i+1),(i+1)+' day(s) & night(s) · £'+p+' for 1 dog / £'+(p+(i+1)*10)+' for 2 dogs']):[[String(H.minutes(slot)),H.S.durationLabel(H.minutes(slot))+' · '+H.money(H.offer(slot)?.rate)]];
+    lenSel.innerHTML=lengths.map(([v,label])=>`<option value="${v}">${label}</option>`).join('');lenSel.value=slot.weekly?'week':String(slot.svc==='stay24'?(slot.days||1):H.minutes(slot));lenSel.disabled=lengths.length===1;
+    $('#hbDurationHelp').textContent=H.offer(slot)?.description||'';
+    const counts=H.petCounts(slot.pets),allowed=slot.svc==='popcat'?[['c','Cats']]:slot.svc==='sit'?[['d','Dogs'],['c','Cats'],['dc','Dogs and cats'],['s','Small pets']]:[['d','Dogs only']];
+    const type=allowed.some(([v])=>v===(counts.dog&&counts.cat?'dc':counts.cat?'c':counts.small?'s':'d'))?(counts.dog&&counts.cat?'dc':counts.cat?'c':counts.small?'s':'d'):allowed[0][0];
+    $('#hbSpecies').innerHTML=allowed.map(([v,label])=>`<option value="${v}">${label}</option>`).join('');$('#hbSpecies').value=type;
     $('#hbDogs').value=counts.dog||1;$('#hbCats').value=counts.cat||1;$('#hbSmall').value=counts.small||1;petFields();
     $('#hbPc').value=slot.pc||'';renderPc();
-    $('#hbReviewService').textContent=serviceNames[slot.svc];$('#hbReviewDuration').textContent=slot.svc==='sit'?'12 hours · 20:00–08:00':H.S.durationLabel(slot.len);$('#hbReviewPets').textContent=H.petsLabel(slot);
+    $('#hbReviewService').textContent=serviceNames[slot.svc];$('#hbReviewDuration').textContent=slot.weekly?'5 × 30-minute walks':H.S.durationLabel(H.minutes(slot));$('#hbReviewPets').textContent=H.petsLabel(slot);
     $('#hbSumWhat').textContent=slot.start||slot.svc==='sit'&&slot.date?H.whenLabel(slot):'Choose a date and start time below';
-    const price=av?H.priceFor(av.services,slot,H.speciesList(slot.pets)):null;$('#hbSumPrice').textContent=price==null?'—':H.money(price);
+    const price=H.priceFor(av?.services||[],slot,H.speciesList(slot.pets));$('#hbSumPrice').textContent=price==null?'Request a quote':H.money(price);
+    $('#hbQuote').hidden=price!==null;$('#hbContinue').hidden=price===null;
+    $('#hbWeekly').hidden=!slot.weekly;
+    $('#hbWeeklyList').innerHTML=(slot.slots||[]).map((s,i)=>`<li>${H.longDay(s.date)} · ${s.start} <button type="button" data-remove-walk="${i}">Remove</button></li>`).join('');
+    $$('[data-remove-walk]').forEach(b=>b.addEventListener('click',()=>{slot.slots.splice(Number(b.dataset.removeWalk),1);persist();render();}));
+    $('#hbAddWeekly').disabled=!slot.date||!slot.start||(slot.slots||[]).length>=5;
+    $('#hbAddWeekly').textContent='Add this walk ('+(slot.slots||[]).length+'/5 selected)';
     if(av){renderCal();renderTimes();}
-    const missingDate=!!av&&!slot.date,missingTime=!!av&&slot.svc!=='sit'&&!slot.start;
+    const missingDate=!!av&&!slot.date&&!H.complete(slot),missingTime=!!av&&!slot.start&&!H.complete(slot);
     for(const [selector,missing] of [['.hb-cal',missingDate],['.hb-times',missingTime]]){$(selector).classList.toggle('hb-required',missing);$(selector).setAttribute('aria-invalid',String(missing));}
-    $('#hbContinue').disabled=step!==4||!av||!H.complete(slot);
+    $('#hbContinue').disabled=step!==4||!av||!H.complete(slot)||price===null;
     const note=$('#hbRequired');note.classList.toggle('is-missing',missingDate||missingTime);
-    note.textContent=failed?'Availability could not be loaded. Please refresh or contact us.':!av?'Loading available slots…':missingDate?'Choose an available date in the red-bordered calendar.':missingTime?'Choose a start time. Coloured blocks will show the full visit.':'Your full visit is selected — you can continue.';
+    note.textContent=failed?'Availability could not be loaded. Please refresh or contact us.':!av?'Loading available slots…':slot.weekly&&!H.complete(slot)?'Choose and add five walks on different dates within seven days.':missingDate?'Choose an available date in the red-bordered calendar.':missingTime?'Choose a start time. Coloured blocks will show the full visit.':'Your full visit is selected — you can continue.';
   }
   function renderCal() {
     $('#hbMonth').textContent=month.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
@@ -167,7 +187,7 @@ window.HB = (() => {
     for(let d=1;d<=days;d++){
       const date=iso(new Date(month.getFullYear(),month.getMonth(),d)),free=date>=av.today.date&&dayFree(date),b=document.createElement('button');
       b.type='button';b.className='hb-day'+(date===slot.date?' on':'');b.textContent=d;b.disabled=!free;b.setAttribute('aria-label',H.longDay(date)+(free?'':', unavailable'));b.setAttribute('aria-pressed',String(date===slot.date));
-      b.addEventListener('click',()=>{slot.date=date;keepValid();persist();render();});g.appendChild(b);
+      b.addEventListener('click',()=>{slot.date=date;slot.start=null;keepValid();persist();render();});g.appendChild(b);
     }
     const first=new Date(+av.today.date.slice(0,4),+av.today.date.slice(5,7)-1,1);$('#hbPrev').disabled=month<=first;$('#hbNext').disabled=month>=new Date(first.getFullYear(),first.getMonth()+5,1);
   }
@@ -175,29 +195,26 @@ window.HB = (() => {
     const t=$('#hbTimes'),coverage=$('#hbCoverage');t.innerHTML='';coverage.hidden=true;
     if(!slot.date){$('#hbDay').textContent='Choose a day';$('#hbHint').textContent='Then choose a start time';return;}
     $('#hbDay').textContent=H.longDay(slot.date);
-    const overnight=slot.svc==='sit',start=overnight?H.S.toMin('20:00'):slot.start?H.S.toMin(slot.start):null,duration=overnight?720:slot.len;
-    $('#hbHint').textContent=overnight?'Fixed overnight stay':'Each block is 30 minutes. Select a start.';
-    if(overnight)t.innerHTML='<div class="hb-night"><b>20:00–08:00</b>Until the next morning</div>';
-    else {
-      const closed=H.dayInfo(av,slot.date).closed,others=(av.busy||[]).map(b=>({start:b.startAt,end:b.endAt,same:true}));
-      const options=H.S.startOptions(slot.date,duration,{closed,others,nowAt:H.S.absAt(av.today.date,av.today.time)});
-      t.innerHTML=options.map(o=>{const covered=start!==null&&o.min>=start&&o.min<start+duration;return `<button type="button" data-s="${o.label}" class="${covered?'hb-covered':''}" aria-pressed="${o.label===slot.start}" aria-label="${o.label}${covered?', included in your visit':''}${o.reason?', cannot start here: '+H.S.REASONS[o.reason]:', select start time'}"${o.reason?' disabled':''}>${o.label}${covered?'<small>'+(o.label===slot.start?'Start':'Your visit')+'</small>':''}</button>`;}).join('');
-      $$('button:not(:disabled)',t).forEach(b=>b.addEventListener('click',()=>{slot.start=b.dataset.s;persist();render();}));
-    }
+    const service=H.offer(slot),fixed=service?.fixedStart,start=slot.start?H.S.toMin(slot.start):null,duration=H.minutes(slot),starts=H.slotStarts(av,slot,slot.date);
+    $('#hbHint').textContent=fixed?'Fixed start · '+fixed:'Each block is 30 minutes. Select a start.';
+    const display=fixed?[H.S.toMin(fixed)]:Array.from({length:26},(_,i)=>420+i*30);
+    t.innerHTML=display.map(m=>{const time=H.S.toHHMM(m),covered=start!==null&&m>=start&&m<start+duration,valid=starts.includes(time);return `<button type="button" data-s="${time}" class="${covered?'hb-covered':''}" aria-pressed="${time===slot.start}" aria-label="${time}${covered?', included in your visit':''}${valid?', select start time':', unavailable for this visit'}"${valid?'':' disabled'}>${time}${covered?'<small>'+(time===slot.start?'Start':'Your visit')+'</small>':''}</button>`;}).join('');
+    $$('button:not(:disabled)',t).forEach(b=>b.addEventListener('click',()=>{slot.start=b.dataset.s;persist();render();}));
     if(start!==null){
       const end=(start+duration)%1440,format=n=>H.S.toHHMM(n%1440);coverage.hidden=false;
-      coverage.innerHTML=`<p><strong>${format(start)}–${format(end)}${overnight?' next day':''}</strong> · ${H.S.durationLabel(duration)}</p><div class="hb-duration-blocks" role="list" aria-label="Selected half-hour blocks">${Array.from({length:duration/30},(_,i)=>`<span role="listitem">${format(start+i*30)}<small>–${format(start+(i+1)*30)}</small></span>`).join('')}</div>`;
+      coverage.innerHTML=`<p><strong>${format(start)}–${format(end)}${duration+start>=1440?' · ends '+H.longDay(H.S.dateOf(H.S.absAt(slot.date,slot.start)+duration)):''}</strong> · ${H.S.durationLabel(duration)}</p><div class="hb-duration-blocks" role="list" aria-label="Selected half-hour blocks">${Array.from({length:duration/30},(_,i)=>`<span role="listitem" aria-label="${H.longDay(H.S.dateOf(H.S.absAt(slot.date,slot.start)+i*30))} ${format(start+i*30)}–${format(start+(i+1)*30)}">${format(start+i*30)}<small>–${format(start+(i+1)*30)}</small></span>`).join('')}</div>`;
     }
     const on=t.querySelector('[aria-pressed="true"]');if(on)t.scrollTop=Math.max(0,on.offsetTop-t.offsetTop-50);
   }
-  $$('.hb-svc button').forEach(b=>b.addEventListener('click',()=>{const changed=slot.svc!==b.dataset.svc;slot.svc=b.dataset.svc;if(changed){slot.start=null;slot.date=null;slot.pets='d1';delete slot.flow;delete slot.view;}keepValid();go(2);}));
-  $('#hbLen').addEventListener('change',e=>{slot.len=Number(e.target.value);keepValid();persist();});
+  $$('.hb-svc button').forEach(b=>b.addEventListener('click',()=>{const changed=slot.svc!==b.dataset.svc;slot.svc=b.dataset.svc;if(changed){slot.start=null;slot.date=null;slot.pets=slot.svc==='popcat'?'c1':'d1';slot.weekly=false;slot.slots=[];slot.len=slot.svc==='daycare'?540:30;slot.days=1;delete slot.flow;delete slot.view;}keepValid();go(2);}));
+  $('#hbLen').addEventListener('change',e=>{slot.weekly=e.target.value==='week';if(slot.svc==='stay24')slot.days=Number(e.target.value);else if(!slot.weekly)slot.len=Number(e.target.value);slot.slots=[];slot.start=null;keepValid();persist();render();});
   $('#hbDurationNext').addEventListener('click',()=>go(3));
   $('#hbSpecies').addEventListener('change',petFields);
   $('#hbPetsNext').addEventListener('click',()=>{if(!readPets())return;slot.pc=$('#hbPc').value.slice(0,10);keepValid();go(4);});
   $('#hbPc').addEventListener('input',e=>{slot.pc=e.target.value.slice(0,10);persist();renderPc();});
   $$('[data-back],[data-edit]').forEach(b=>b.addEventListener('click',()=>go(Number(b.dataset.back||b.dataset.edit))));
   $('#hbPrev').addEventListener('click',()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCal();});$('#hbNext').addEventListener('click',()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCal();});
+  $('#hbAddWeekly').addEventListener('click',()=>{if(!slot.date||!slot.start)return;slot.slots||=[];if(slot.slots.length>=5||slot.slots.some(s=>s.date===slot.date))return;slot.slots.push({date:slot.date,start:slot.start});slot.date=null;slot.start=null;persist();render();});
   $('#hbContinue').addEventListener('click',()=>{if(step!==4||!H.complete(slot))return;persist();location.href='book.html';});
   render();cal.classList.add('loading');
   H.availability().then(data=>{av=data;keepValid();const ref=slot.date||av.today.date;month=new Date(+ref.slice(0,4),+ref.slice(5,7)-1,1);cal.classList.remove('loading');render();}).catch(()=>{failed=true;cal.classList.remove('loading');$('#hbErr').hidden=false;render();});

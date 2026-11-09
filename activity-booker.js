@@ -10,7 +10,7 @@ window.ActivityBooker = (root, opts) => {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money = p => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(p / 100);
   const KIND_NAME = { walk: 'Dog walk', visit: 'Home visit', overnight: 'Overnight house-sit' };
-  const ADDABLE = [['walk30', 'Dog walk', '30 min'], ['walk60', 'Dog walk', '1 hr'], ['visit30', 'Home visit', '30 min'], ['visit60', 'Home visit', '1 hr']];
+  const ADDABLE = [['walk30','Dog walk','30 min'],['walk60','Dog walk','1 hr'],['popdog','Dog pop-in','30 min'],['popcat','Cat pop-in','30 min'],['daycare','Daytime Stay & Play','up to 9 hr'],['evening','Evening Stay & Play','17:30–22:00'],...[1,2,3,4,5].map(n=>['stay24_'+n,'24-hour care',n+' day(s) & night(s)'])];
   const shortDay = date => new Date(date + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
   const admin = !!opts.admin;
   let st = { date: null, overnight: false, products: [], until: null, excludeId: null, half: null, pets: [] };
@@ -36,10 +36,7 @@ window.ActivityBooker = (root, opts) => {
   // Mirrors the API's extra-pet rule (the API is the price authority; this is the estimate).
   function priceOf(id) {
     const s = service(id), ps = st.pets; if (!s) return 0;
-    const extra = id === 'sitting'
-      ? ps.slice().sort((a, b) => (b.species === 'Dog') - (a.species === 'Dog')).slice(1).reduce((n, p) => n + (p.species === 'Dog' ? 800 : p.species === 'Cat' ? 400 : 0), 0)
-      : (s.extra || 0) * (S.KIND[id] === 'visit' ? ps.slice(1).filter(p => p.species !== 'Dog').length : Math.max(0, ps.length - 1));
-    return s.rate + extra;
+    return window.PPCPrices.catalogPrice(s,ps.map(p=>p.species));
   }
   const lengthOf = products => products.reduce((n, id) => n + S.PRODUCT_MIN[id], 0);
   const startHHMM = () => st.overnight ? S.OVERNIGHT_START : (fromWheel.value == null ? null : S.toHHMM(fromWheel.value));
@@ -83,7 +80,7 @@ window.ActivityBooker = (root, opts) => {
     // Daytime start: grey every start the current chain can't use.
     if (daytime) {
       const ctx = { others: others(), closed: opts.isClosed(st.date), nowAt: nowAt() };
-      let starts = S.startOptions(st.date, len, ctx);
+      let starts = S.startOptions(st.date, 30, ctx).map(o=>{if(!st.products.length)return o;const error=S.planError(st.date,o.label,st.products);const c=S.chain(st.date,o.label,st.products);return {...o,reason:error?'hours':blockReason(c.startAt,c.endAt)};});
       if (st.half) starts = starts.filter(o => st.half === 'am' ? o.min < 720 : o.min >= 720);
       const keep = fromWheel.value;
       fromWheel.set(starts.map(o => ({ value: o.min, label: o.label, disabled: !!o.reason && !(admin && o.reason === 'gap'), gap: o.reason === 'gap', title: o.reason ? S.REASONS[o.reason] : '' })), keep);
@@ -95,14 +92,14 @@ window.ActivityBooker = (root, opts) => {
       const segs = ln.idx.map(i => c?.segments[i]).filter(Boolean), mins = ln.idx.reduce((n, i) => n + S.PRODUCT_MIN[st.products[i]], 0);
       const price = ln.idx.reduce((n, i) => n + priceOf(st.products[i]), 0);
       const when = segs.length ? `${S.timeOf(segs[0].startAt)}–${S.timeOf(segs[segs.length - 1].endAt)}${S.dateOf(segs[segs.length - 1].endAt) !== st.date ? ` ${shortDay(S.dateOf(segs[segs.length - 1].endAt))}` : ''}` : '';
-      const parts = ln.idx.map(i => S.PRODUCT_MIN[st.products[i]] === 60 ? '1 hr' : '30 min').join(' + ');
-      if (ln.kind === 'overnight') return `<li class="booker-line is-night"><div class="line-head"><strong>${KIND_NAME.overnight}</strong> · 12 hr · ${esc(when)}<span class="line-price">${money(price)}</span></div><p class="line-note">Dog walks are not part of the overnight. Daytime attendance is not included unless you extend the end time below.</p></li>`;
-      const ext = [['30', ln.kind + '30'], ['60', ln.kind + '60']].map(([m, id]) => {
+      const parts = ln.idx.map(i => S.durationLabel(S.PRODUCT_MIN[st.products[i]])).join(' + ');
+      if (ln.kind === 'overnight') return `<li class="booker-line is-night"><div class="line-head"><strong>${KIND_NAME.overnight}</strong> · 12 hr · ${esc(when)}<span class="line-price">${money(price)}</span></div><p class="line-note">Includes an evening walk, a morning walk, feeding and fresh water, comfort, companionship and morning updates. Daytime care is available as a separate package.</p></li>`;
+      const ext = (ln.kind==='walk'?[['30', ln.kind + '30'], ['60', ln.kind + '60']]:[]).map(([m, id]) => {
         const next = st.products.slice(); next.splice(ln.idx[ln.idx.length - 1] + 1, 0, id);
         const why = addReason(next, id);
         return `<button type="button" class="pp-secondary line-btn" data-extend="${li}" data-id="${id}" ${why && !(admin && why === 'gap') ? 'disabled' : ''} title="${why ? esc(S.REASONS[why] || why) : `Extend by ${m === '60' ? '1 hr' : '30 min'}`}">+${m === '60' ? '1 hr' : '30 min'}</button>`;
       }).join('');
-      return `<li class="booker-line"><div class="line-head"><strong>${KIND_NAME[ln.kind]}</strong> · ${S.durationLabel(mins)} <small>(${parts})</small> · ${esc(when)}<span class="line-price">${money(price)}</span></div>
+      return `<li class="booker-line"><div class="line-head"><strong>${KIND_NAME[ln.kind]||service(st.products[ln.idx[0]])?.name||'Pet care'}</strong> · ${S.durationLabel(mins)} <small>(${parts})</small> · ${esc(when)}<span class="line-price">${money(price)}</span></div>
         <div class="line-actions"><span class="line-label">Extend</span>${ext}${ln.idx.length > 1 ? `<button type="button" class="pp-textlink" data-shorten="${li}">Undo last extension</button>` : ''}<button type="button" class="pp-textlink line-remove" data-remove="${li}">Remove</button></div></li>`;
     }).join('') || '<li class="booker-empty">No activities yet — add one below.</li>';
     // Add buttons.
@@ -118,12 +115,14 @@ window.ActivityBooker = (root, opts) => {
     $('[data-summary]').textContent = c ? (st.overnight
       ? `Arrive ${shortDay(st.date)} 20:00 · leave ${shortDay(S.dateOf(c.endAt))} ${S.timeOf(c.endAt)} · ${S.durationLabel(c.endAt - c.startAt)}`
       : `${S.timeOf(c.startAt)}–${S.timeOf(c.endAt)} · ${S.durationLabel(c.endAt - c.startAt)}`) : '';
-    const total = st.products.reduce((n, id) => n + priceOf(id), 0);
-    $('[data-cost]').innerHTML = st.products.length ? `<strong>Estimated total ${st.pets.length ? money(total) : '—'}</strong>${st.pets.length ? '' : '<p>Choose your pets to see the price.</p>'}` : '';
+    const quoted=st.products.some(id=>priceOf(id)===null);const total = st.products.reduce((n, id) => n + (priceOf(id)||0), 0);
+    $('[data-cost]').innerHTML = st.products.length ? `<strong>Estimated total ${quoted?'Request a quote':st.pets.length ? money(total) : '—'}</strong>${st.pets.length ? '' : '<p>Choose your pets to see the price.</p>'}` : '';
     opts.onChange?.(api);
   }
   // Why adding product `id` (giving `products`) is not possible, or null.
   function addReason(products, id) {
+    if(!service(id))return 'Choose a service from the updated price list';
+    if(st.pets.length){const reason=window.PPCPrices.quoteReason(service(id),st.pets.map(p=>p.species));if(reason)return reason;}
     if (S.KIND[id] === 'walk' && st.pets.length && !dogsOnly()) return 'Dog walks are for dogs only';
     if (st.overnight) { if (lengthOf(products) - S.OVERNIGHT_MIN > (st.until ?? 0)) return 'More than the extra time you chose'; return null; }
     const start = startHHMM(); if (start == null) return 'Choose a start time first';
@@ -191,6 +190,7 @@ window.ActivityBooker = (root, opts) => {
     },
     problem() {
       if (!st.products.length) return 'Add at least one activity.';
+      for(const id of st.products){const reason=window.PPCPrices.quoteReason(service(id),st.pets.map(p=>p.species));if(reason)return reason;}
       if (startHHMM() == null) return 'Choose a start time.';
       if (st.overnight && fillLeft() > 0) return `Fill the extra ${S.durationLabel(fillLeft())} with walks or visits, or choose an earlier end time.`;
       if (st.overnight && fillLeft() < 0) return 'The activities run past the end time you chose.';

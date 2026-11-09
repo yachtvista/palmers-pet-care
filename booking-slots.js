@@ -12,8 +12,8 @@ const OVERNIGHT_MIN = 12 * 60; // 20:00 → 08:00 wall clock
 const DAY = 24 * 60;
 
 // How long each product lasts. Prices live in the API's service list, not here.
-const PRODUCT_MIN = { walk30: 30, walk60: 60, visit30: 30, visit60: 60, sitting: OVERNIGHT_MIN };
-const KIND = { walk30: 'walk', walk60: 'walk', visit30: 'visit', visit60: 'visit', sitting: 'overnight' };
+const PRODUCT_MIN = { walk30: 30, walk60: 60, visit30: 30, visit60: 60, sitting: OVERNIGHT_MIN, popdog:30, popcat:30, daycare:540, evening:270, ...Object.fromEntries(Array.from({length:18},(_,i)=>['daycare_'+((i+1)*30),(i+1)*30])), ...Object.fromEntries([1,2,3,4,5].map(n=>['stay24_'+n,n*1440])) };
+const KIND = { walk30: 'walk', walk60: 'walk', visit30: 'visit', visit60: 'visit', sitting: 'overnight', popdog:'popdog', popcat:'popcat', daycare:'daycare', evening:'evening', ...Object.fromEntries(Array.from({length:18},(_,i)=>['daycare_'+((i+1)*30),'daycare'])), ...Object.fromEntries([1,2,3,4,5].map(n=>['stay24_'+n,'stay24'])) };
 const MAX_PRODUCTS = 30;
 
 const toMin = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
@@ -45,6 +45,15 @@ function planError(date, start, products) {
   if (!Array.isArray(products) || !products.length) return 'Add at least one activity.';
   if (products.length > MAX_PRODUCTS) return 'That is too many activities for one booking.';
   if (products.some((id) => !(id in PRODUCT_MIN))) return 'Choose activities from the list.';
+  if(!isHHMM(start)||toMin(start)%STEP)return 'Times are in 30-minute steps.';
+  const special=products.some(id=>!['walk30','walk60','visit30','visit60','sitting'].includes(id));
+  if(special){
+    if(products.length!==1)return 'Book packages and pop-ins separately from other activities.';
+    const id=products[0],m=toMin(start);
+    if(id==='evening')return start==='17:30'?null:'Evening Stay & Play starts at 17:30 and ends at 22:00.';
+    if(id.startsWith('stay24_'))return m>=toMin(OPEN)&&m<toMin(CLOSE)?null:'Choose a start between 07:00 and 19:30.';
+    return m>=toMin(OPEN)&&m+PRODUCT_MIN[id]<=toMin(CLOSE)?null:'The whole visit must fit between 07:00 and 20:00.';
+  }
   const nights = products.filter((id) => id === 'sitting').length;
   if (nights > 1) return 'One overnight per booking — copy it onto other nights instead.';
   if (nights && products[0] !== 'sitting') return 'An overnight starts the booking; add other activities after it.';
@@ -63,7 +72,7 @@ function conflictWith(s, e, others) {
   let gap = false;
   for (const o of others) {
     if (s < o.end && o.start < e) return 'overlap';
-    if (!o.same && !(e + GAP <= o.start || s >= o.end + GAP)) gap = true;
+    if (!o.same && !(e + (o.buffer ?? GAP) <= o.start || s >= o.end + (o.buffer ?? GAP))) gap = true;
   }
   return gap ? 'gap' : null;
 }

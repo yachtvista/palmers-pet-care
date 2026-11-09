@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Palmer’s Pet Care | Selsey dog walking and pet sitting</title>
-  <meta name="description" content="Dog walking, home visits and house-sitting in Selsey and the surrounding area.">
+  <meta name="description" content="Dog walking, pop-in visits, Stay &amp; Play and overnight care in Selsey and the surrounding area.">
   <link rel="icon" href="images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=brand-text-1">
-  <link rel="stylesheet" href="home-booker.css?v=guided-visit-1">
+  <link rel="stylesheet" href="styles.css?v=prices-20261109">
+  <link rel="stylesheet" href="home-booker.css?v=prices-20261109">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script src="traffic-beacon.js?v=browser-visits-2" defer></script>
 </head>
@@ -36,7 +36,7 @@
       <div>
         <p class="hb-eyebrow">Local care · Selsey, West Sussex</p>
         <h1>Small details.<em>Happy pets.</em></h1>
-        <p class="hb-lede">Thoughtful dog walking, home visits and house-sitting, built around your pet’s routine.</p>
+        <p class="hb-lede">Thoughtful dog walking, pop-in visits, Stay &amp; Play and overnight care, built around your pet’s routine.</p>
         <div class="hb-collage">
           <svg class="hb-spark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" aria-hidden="true"><path d="M44 8l-4 14M26 18l8 10M8 34l16 4"/></svg>
           <figure class="hb-main"><img src="images/murphy-seafront.jpg" alt="Murphy smiling on a sunny coastal path"></figure>
@@ -50,11 +50,7 @@
         <p class="hb-sub">Find a time and see your price before signing up.</p>
         <p id="hbWizardStatus" class="hb-wizard-status" role="status" aria-live="polite"></p>
         <section id="hbServiceStep" class="hb-wizard-panel" aria-labelledby="hbServiceTitle"><h3 id="hbServiceTitle" tabindex="-1">1. What care would you like?</h3>
-        <div class="hb-svc" role="group" aria-label="Service">
-          <button type="button" data-svc="walk" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.6 3.2c.5-.6 1.6-.5 2 .2l.8 1.4 1.4.4c.5.2.6.8.2 1.2l-1.3 1.2c-.4.4-.9.6-1.4.6h-.6l-1.3 4.6c-.2.8-.5 1.5-1 2.1l.9 5.6c.1.6-.4 1.1-1 1.1h-.7c-.5 0-.9-.3-1-.8l-.7-3.6c-1 .3-2.1.4-3.2.3l-.7 3.4c-.1.4-.5.7-.9.7h-.8c-.6 0-1-.5-1-1.1l.6-4.4c-1-.9-1.6-2.1-1.7-3.5L4 13.8c-.4.9-1.5 1.1-2.2.5-.5-.4-.5-1.1-.1-1.6L4.4 9c.5-.6 1.3-1 2.1-1h6.6c.9 0 1.7-.5 2.1-1.3l1.4-2.6c.3-.4.6-.7 1-.9Z"/></svg>Dog walking</button>
-          <button type="button" data-svc="visit" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M7 21c-1.2-1.4-1.6-3.3-1.2-5.2L7 10 5.5 3.5 9.6 6.6h4.8l4.1-3.1L17 10l1.2 5.8c.4 1.9 0 3.8-1.2 5.2Z"/><circle cx="10" cy="12.5" r=".7" fill="currentColor"/><circle cx="14" cy="12.5" r=".7" fill="currentColor"/><path d="M11.2 15h1.6l-.8.8Z" fill="currentColor"/></svg>Home visits</button>
-          <button type="button" data-svc="sit" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg>House-sitting</button>
-        </div>
+        <div class="hb-svc" role="group" aria-label="Service"><button type="button" data-svc="walk" aria-pressed="false">Dog walking<small>£15 / £20 · weekly £65</small></button><button type="button" data-svc="popdog" aria-pressed="false">Dog pop-in<small>£16</small></button><button type="button" data-svc="popcat" aria-pressed="false">Cat pop-in<small>£16</small></button><button type="button" data-svc="daycare" aria-pressed="false">Daytime Stay & Play<small>£85 · up to 9 hours</small></button><button type="button" data-svc="evening" aria-pressed="false">Evening Stay & Play<small>£50 · 17:30–22:00</small></button><button type="button" data-svc="sit" aria-pressed="false">Overnight care<small>from £40 · 20:00–08:00</small></button><button type="button" data-svc="stay24" aria-pressed="false">24-hour care<small>from £100</small></button></div>
         </section>
         <section id="hbDurationStep" class="hb-wizard-panel" aria-labelledby="hbDurationTitle" hidden><h3 id="hbDurationTitle" tabindex="-1">2. How long do you need?</h3><div class="hb-sel"><label for="hbLen">Visit duration</label><select id="hbLen"></select></div><p id="hbDurationHelp" class="hb-after"></p><div class="hb-wizard-actions"><button type="button" data-back="1">Back</button><button type="button" id="hbDurationNext">Next: your pets</button></div></section>
         <section id="hbPetsStep" class="hb-wizard-panel" aria-labelledby="hbPetsTitle" hidden><h3 id="hbPetsTitle" tabindex="-1">3. Which pets are we caring for?</h3><div class="hb-sel"><label for="hbSpecies">Pet species</label><select id="hbSpecies"><option value="d">Dogs</option><option value="c">Cats</option><option value="dc">Dogs and cats</option><option value="s">Small pets</option></select></div><div class="hb-pet-counts"><label id="hbDogField" for="hbDogs">Number of dogs<input id="hbDogs" type="number" min="1" max="10" value="1" inputmode="numeric"></label><label id="hbCatField" for="hbCats">Number of cats<input id="hbCats" type="number" min="1" max="10" value="1" inputmode="numeric"></label><label id="hbSmallField" for="hbSmall">Number of small pets<input id="hbSmall" type="number" min="1" max="10" value="1" inputmode="numeric"></label></div><div class="hb-pcf"><label for="hbPc">Your postcode (optional)</label><input id="hbPc" autocomplete="postal-code" placeholder="PO20" maxlength="10"></div><p class="hb-note warn" id="hbPcNote" hidden></p><p id="hbPetError" class="hb-required-note is-missing" role="alert" hidden></p><div class="hb-wizard-actions"><button type="button" data-back="2">Back</button><button type="button" id="hbPetsNext">Next: choose a date &amp; time</button></div></section>
@@ -76,9 +72,11 @@
             <div class="hb-tlist" id="hbTimes" aria-label="Available start times"></div>
           </div>
         </div>
+        <div id="hbWeekly" hidden><h3>Your five walks</h3><ol id="hbWeeklyList"></ol><button type="button" id="hbAddWeekly" class="hb-cta">Add this walk</button></div>
         <div id="hbCoverage" class="hb-coverage" aria-live="polite" hidden></div>
         <p class="hb-note err" id="hbErr" hidden>We couldn’t load the diary just now. Please refresh, or <a href="contact.html">send us a message</a>.</p>
         <p class="hb-required-note" id="hbRequired" role="status" aria-live="polite" aria-atomic="true">Loading available slots…</p>
+        <a id="hbQuote" class="hb-cta" href="contact.html" hidden>Request a quote for these pets</a>
         <button class="hb-cta" aria-describedby="hbRequired" id="hbContinue" type="button" disabled>Continue with this slot →</button>
         <p class="hb-after">Next: create your account and add your pet’s details.</p>
         </section>
@@ -151,11 +149,7 @@
   <section class="panel prices-panel" id="prices">
     <div class="wrap">
       <div class="section-heading"><div><p class="eyebrow">Simple, clear pricing</p><h2 class="sec">Care that fits<br><em>your routine.</em></h2></div><p class="lede">Prices are confirmed after a free meet and greet, so every booking reflects your pet’s needs.</p></div>
-      <div class="prices">
-        <article class="price"><h3>Dog walks</h3><p class="amount">From £16</p><ul><li>30 minutes £16 · 60 minutes £22</li><li>Collection from your door</li></ul></article>
-        <article class="price"><h3>Home visits</h3><p class="amount">From £14</p><ul><li>20–30 minutes £14 · 45–60 minutes £19</li><li>Dogs, cats and small pets</li></ul></article>
-        <article class="price"><h3>House-sitting</h3><p class="amount">From £40</p><ul><li>Overnight in your home</li><li>Routine kept reassuringly familiar</li></ul></article>
-      </div>
+<div class="prices"><article class="price"><h3>Dog walking</h3><p class="amount">From £15</p><ul><li>30-minute solo walk — £15</li><li>60-minute solo walk — £20</li><li>Weekly package: 5 × 30-minute walks — £65</li><li>Individual attention, exercise and a photo update in your customer portal.</li></ul></article><article class="price"><h3>Pop-in visits</h3><p class="amount">£16</p><h4>Dog pop-in</h4><ul><li>Feeding and fresh water</li><li>A complimentary 30-minute walk</li><li>A quick wellbeing check and photo updates uploaded to your customer portal</li></ul><h4>Cat pop-in</h4><ul><li>Feeding and fresh water</li><li>Emptying and cleaning the litter tray; changing litter when required</li><li>30 minutes of playtime and companionship</li><li>Photo updates uploaded to your customer portal</li></ul></article><article class="price"><h3>Stay &amp; Play</h3><p class="amount">Daytime £85 · Evening £50</p><ul><li>Daytime: up to 9 hours of care in your home — £85</li><li>Evening: 17:30–22:00 (4½ hours) — £50</li><li>Each includes one 30-minute dog walk, feeding, playtime and companionship.</li><li>Photo updates uploaded to your customer portal</li></ul></article><article class="price"><h3>Overnight care</h3><p class="amount">From £40 per night</p><ul><li>20:00–08:00, in your home</li><li>An evening walk and a morning walk</li><li>Feeding and fresh water</li><li>Comfort, companionship and morning updates</li><li>Extra dog: +£8 per night</li><li>Extra cat or small pet: +£4 per night</li></ul></article><article class="price price-package"><h3>24-hour Stay &amp; Care</h3><p>Daytime companionship and overnight care, in your pet’s home.</p><table class="package-price-table"><thead><tr><th scope="col">Duration</th><th scope="col">1 dog</th><th scope="col">2 dogs</th></tr></thead><tbody><tr><th scope="row">1 day &amp; 1 night</th><td>£100</td><td>£110</td></tr><tr><th scope="row">2 days &amp; 2 nights</th><td>£190</td><td>£210</td></tr><tr><th scope="row">3 days &amp; 3 nights</th><td>£270</td><td>£300</td></tr><tr><th scope="row">4 days &amp; 4 nights</th><td>£340</td><td>£380</td></tr><tr><th scope="row">5 days &amp; 5 nights</th><td>£400</td><td>£450</td></tr></tbody></table><p>Every package includes two 30-minute dog walks per day (morning and evening), feeding and fresh water, playtime, cuddles, companionship, overnight care and photo updates uploaded to your customer portal.</p></article></div><p class="lede" style="margin-top:1.5rem">For pet combinations without a listed price, please <a href="contact.html">request a quote</a>. Photo updates are provided with your permission.</p>
       <div class="cta-row"><a class="btn" href="prices.html">See full pricing</a></div>
     </div>
   </section>
@@ -294,8 +288,9 @@
   })();
 </script>
   <script src="cat-yarn.js" defer></script>
-  <script src="booking-slots.js"></script>
-  <script src="home-booker.js?v=guided-visit-1"></script>
+  <script src="booking-slots.js?v=prices-20261109"></script>
+  <script src="price-catalog.js?v=prices-20261109"></script>
+  <script src="home-booker.js?v=prices-20261109"></script>
   <script src="session-link.js" defer></script>
 </body>
 </html>

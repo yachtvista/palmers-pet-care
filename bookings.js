@@ -38,6 +38,8 @@
   }
   const KIND_NAME = { walk: 'Dog walk', visit: 'Home visit', overnight: 'Overnight house-sit' };
   function titleOf(b) {
+    if(b.packageName)return b.packageName;
+    if(b.activities?.length===1){const service=services.find(s=>s.id===b.activities[0].serviceId);if(service && !['walk30','walk60','visit30','visit60'].includes(service.id))return service.name;}
     const groups = [];
     for (const id of productsOf(b)) { const k = S.KIND[id], last = groups[groups.length - 1]; if (last && last.k === k && k !== 'overnight') last.m += S.PRODUCT_MIN[id]; else groups.push({ k, m: S.PRODUCT_MIN[id] }); }
     return groups.map(g => g.k === 'overnight' ? KIND_NAME.overnight : `${KIND_NAME[g.k]} ${S.durationLabel(g.m)}`).join(' + ');

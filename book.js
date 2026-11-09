@@ -43,7 +43,7 @@
     $('#bkSlotDl').innerHTML = `<dt>Service</dt><dd>${esc(H.svcLabel(slot))}</dd><dt>When</dt><dd>${esc(H.whenLabel(slot))}</dd><dt>Pets</dt><dd>${esc(petText)}</dd>${slot.pc ? `<dt>Postcode</dt><dd>${esc(slot.pc.toUpperCase())}</dd>` : ''}`;
     const species = named.length ? named.map((p) => p.species) : H.speciesList(slot.pets);
     const price = av ? H.priceFor(av.services, slot, species) : null;
-    $('#bkSlotPrice').textContent = price == null ? '—' : H.money(price);
+    $('#bkSlotPrice').textContent = price == null ? 'Request a quote' : H.money(price);
   }
 
   /* ---------- account ---------- */
@@ -79,7 +79,7 @@
 
   /* ---------- pets ---------- */
   const petsForm = $('#bkPets');
-  const isWalk = () => slot.svc === 'walk';
+  const isWalk = () => H.offer(slot)?.species?.length===1 && H.offer(slot).species[0]==='Dog';
   const needsDetails = () => me && (!me.owner.phone || !me.owner.address);
   function blankCard(species) { return { species, name: '', breed: '', dob: '', age: '', notes: '' }; }
   function goPets() {
@@ -169,21 +169,21 @@
     $('#bkAgree').checked = false; $('#bkSend').disabled = true; $('#bkTaken').hidden = true; status('review', '');
     const pets = chosenPets(), o = me.owner;
     const price = H.priceFor(av.services, slot, pets.map((p) => p.species));
-    $('#bkReview').innerHTML = [['Service', H.svcLabel(slot)], ['When', H.whenLabel(slot)], ['Pets', pets.map((p) => p.name).join(', ')], ['Name', o.name], ['Address', o.address || ''], ['Price', H.money(price)], ['After sending', 'Pending until approved']]
+    $('#bkReview').innerHTML = [['Service', H.svcLabel(slot)], ['When', H.whenLabel(slot)], ['Pets', pets.map((p) => p.name).join(', ')], ['Name', o.name], ['Address', o.address || ''], ['Price', price==null?'Request a quote':H.money(price)], ['After sending', 'Pending until approved']]
       .map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('');
     try { av = await H.availability(); } catch (e) { /* keep the copy we have; the request re-checks anyway */ }
+    if(H.priceFor(av.services,slot,pets.map(p=>p.species))===null){$('#bkTaken').hidden=false;$('#bkTakenText').textContent='Please contact us for a quote for these pets.';$('#bkAlts').innerHTML='<a href="contact.html">Request a quote</a>';return;}
     if (stillFree()) $('#bkFresh').textContent = 'We’ve just checked the diary — your slot is still free.';
     else offerAlternatives();
   }
   function stillFree() {
-    const i = H.dayInfo(av, slot.date);
-    return slot.svc === 'sit' ? i.night() : i.starts(slot.len).includes(slot.start);
+    return H.isFree(av,slot);
   }
   function offerAlternatives(message) {
     $('#bkFresh').textContent = 'Someone else has booked close to your time since you chose it.';
     $('#bkTaken').hidden = false;
     $('#bkSend').disabled = true;
-    const alts = slot.svc === 'sit' || !slot.date ? [] : H.dayInfo(av, slot.date).starts(slot.len)
+    const alts = slot.svc === 'sit' || !slot.date ? [] : H.slotStarts(av,slot,slot.date)
       .sort((a, b) => Math.abs(S.toMin(a) - S.toMin(slot.start)) - Math.abs(S.toMin(b) - S.toMin(slot.start))).slice(0, 3).sort();
     $('#bkTakenText').textContent = message || (alts.length ? 'Nearest free times the same day:' : 'There’s nothing else free that day.');
     $('#bkAlts').innerHTML = alts.map((t) => `<button type="button" data-alt="${t}">${t}</button>`).join('') + '<a href="index.html">Pick another day</a>';
@@ -195,7 +195,9 @@
     const btn = $('#bkSend'); btn.disabled = true; status('review', '');
     const pets = chosenPets();
     try {
-      await api('/me/bookings', 'POST', { date: slot.date, start: slot.svc === 'sit' ? S.OVERNIGHT_START : slot.start, activities: H.products(slot), petIds: pets.map((p) => p.id) });
+      if(H.priceFor(av.services,slot,pets.map(p=>p.species))===null)throw new Error('This pet combination needs a quote. Please contact us.');
+      if(slot.weekly){slot.packageRef||=crypto.randomUUID();persist();}
+      await api('/me/bookings','POST',slot.weekly?{packageKind:'walkweek',packageRef:slot.packageRef,slots:slot.slots,petIds:pets.map(p=>p.id)}:{date:slot.date,start:slot.start,activities:H.products(slot),petIds:pets.map(p=>p.id)});
       $('#bkDoneLine').textContent = `${H.svcLabel(slot)} for ${pets.map((p) => p.name).join(', ')}, ${H.whenLabel(slot)}. We’ll email you a copy.`;
       H.clear(); slot = null;
       show('done');
@@ -215,7 +217,7 @@
     if (!H.complete(slot)) { show('empty'); return; }
     try { av = await H.availability(); } catch (e) { /* prices show once it loads */ }
     // A saved slot whose day has gone: back to the homepage to pick again.
-    if (av && slot.date < av.today.date) { slot.date = null; slot.start = null; persist(); show('empty'); return; }
+    if (av && (slot.weekly?(slot.slots||[]).some(s=>s.date<av.today.date):slot.date < av.today.date)) { slot.date = null; slot.start = null; persist(); show('empty'); return; }
     renderSlot();
     try { await loadMe(); } catch (e) { me = null; }
     if (me && me.isAdmin) { $('[data-view="empty"] h2').textContent = 'You’re signed in as the admin'; $('[data-view="empty"] .hb-sub').textContent = 'Book for a customer from the admin calendar instead.'; show('empty'); return; }

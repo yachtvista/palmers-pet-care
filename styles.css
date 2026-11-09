@@ -403,3 +403,5 @@ body .pp-side .brand strong{font-size:1.125rem;line-height:1.2}
  .topbar-inner>.customer-login{width:auto;white-space:nowrap;font-size:.75rem;margin-bottom:.5rem}
  .topbar-inner>.menu-toggle{margin-bottom:.5rem}
 }
+
+.package-price-table{width:100%;border-collapse:collapse;font-size:.95rem}.package-price-table th,.package-price-table td{padding:.65rem .4rem;text-align:left;border-bottom:1px solid #dfdcd5}.package-price-table thead{background:#e9f2ec}.package-price-table td{font-weight:700;color:#1b3354}.price-package{grid-column:1/-1}.price h4{margin:1rem 0 .3rem}.price .amount{line-height:1.4}
