@@ -42,7 +42,7 @@
     return groups.map(g => g.k === 'overnight' ? KIND_NAME.overnight : `${KIND_NAME[g.k]} ${S.durationLabel(g.m)}`).join(' + ');
   }
   function when(b) { const w = windowOf(b), endDate = S.dateOf(w.end); return endDate !== S.dateOf(w.start) ? `${S.timeOf(w.start)} ${shortDay(S.dateOf(w.start))} → ${S.timeOf(w.end)} ${shortDay(endDate)}` : `${S.timeOf(w.start)}–${S.timeOf(w.end)}`; }
-  function occurs(b, date) { const w = windowOf(b), d0 = S.dayNum(date) * S.DAY; return w.start < d0 + S.DAY && w.end > d0; }
+  function occurs(b, date) { if(!blocking(b))return false; const w = windowOf(b), d0 = S.dayNum(date) * S.DAY; return w.start < d0 + S.DAY && w.end > d0; }
   async function api(path, method='GET', body, signal) {
     const r=await fetch(API+path,{method,signal,cache:'no-store',credentials:'include',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
     if(r.status===401){location.href='login.html';throw new Error('Please sign in.');}

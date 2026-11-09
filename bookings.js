@@ -49,7 +49,7 @@
     return endDate !== b.date ? `${S.timeOf(w.start)} → ${S.timeOf(w.end)} ${shortDay(endDate)}` : `${S.timeOf(w.start)}–${S.timeOf(w.end)}`;
   }
   // A booking shows on every date its window touches.
-  function occurs(b, date) { const w = windowOf(b), d0 = S.dayNum(date) * S.DAY; return w.start < d0 + S.DAY && w.end > d0; }
+  function occurs(b, date) { if(!blocking(b))return false; const w = windowOf(b), d0 = S.dayNum(date) * S.DAY; return w.start < d0 + S.DAY && w.end > d0; }
   function render() {
     $('#month-title').textContent = month.toLocaleDateString('en-GB', {month:'long',year:'numeric',timeZone:'UTC'});
     const start = new Date(month); start.setUTCDate(1 - (month.getUTCDay()+6)%7);
@@ -63,7 +63,7 @@
     }
     $('#calendar-days').innerHTML = cells.join('');
     $('#cancel-copy').hidden = !copyId;
-    $('#booking-cards').innerHTML = bookings.length ? [...bookings].sort((a,b) => windowOf(a).start - windowOf(b).start).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(titleOf(b))}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} ${(b.careMode||b.useCustomPrice)?'agreed charge':'estimated'}</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
+    $('#booking-cards').innerHTML = bookings.some(blocking) ? bookings.filter(blocking).sort((a,b) => windowOf(a).start - windowOf(b).start).map(b => `<article class="repeat-card" draggable="true" data-drag="${esc(b.id)}"><h3>${esc(b.petNames.join(', '))}</h3><p>${esc(titleOf(b))}</p><p>${esc(b.date)} · ${esc(when(b))}</p><p>${money(b.total)} ${(b.careMode||b.useCustomPrice)?'agreed charge':'estimated'}</p><p class="booking-state ${b.status === 'approved' ? 'is-approved' : 'is-pending'}">${statusLabel(b)}</p><button type="button" class="pp-secondary" data-copy="${esc(b.id)}">Copy to a day</button> <button type="button" class="pp-textlink" data-edit="${esc(b.id)}">Edit</button></article>`).join('') : '<p>Your saved appointments will appear here, ready to use again.</p>';
     if (dayDialog.open) renderDay();
   }
 
