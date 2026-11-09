@@ -244,3 +244,7 @@ body.hb-page { background: var(--hb-bg); }
 #hbBooker,.hb-hero-grid>div,#hbSlotStep,.hb-coverage,.hb-duration-blocks{min-width:0;box-sizing:border-box}#hbBooker{max-width:100%}.hb-duration-blocks{width:100%;max-width:100%}.hb-coverage{max-width:100%}
 
 #hbDurationHelp { font-size: 1.12rem; }
+
+.hb-deposit-notice { margin-top:1rem; padding:1rem; border:2px solid var(--hb-teal); border-radius:10px; background:#fff; color:var(--hb-ink); font-size:1rem; line-height:1.6; }
+.hb-deposit-notice h4 { margin:0 0 .4rem; color:var(--hb-teal); font-size:1.12rem; }
+.hb-deposit-notice p { margin:.4rem 0 0; }
