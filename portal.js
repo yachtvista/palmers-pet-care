@@ -402,7 +402,34 @@
         if (p) { petForm.name.value = p.name; petForm.species.value = p.species; petForm.age.value = p.age; petForm.breed.value = p.breed || ''; petForm.diet.value = p.diet || ''; petForm.notes.value = p.notes || ''; petForm.medication.value = p.medication || ''; petForm.medicationFrequency.value = p.medicationFrequency || ''; petForm.likes.value = p.likes || ''; petForm.dislikes.value = p.dislikes || ''; }
         $('.pp-more', petForm).open = !!(p && (p.medication || p.likes || p.dislikes));
         syncAge();
+        setPetPhoto(null, p);
         openDialog('pet', from); petForm.name.focus();
+      }
+      // Pet photo in the add / edit form: held in the browser until the pet is saved, then sent to the
+      // same profile-photo route the pet card uses (server sniffs type, crops to 800px, strips metadata).
+      const pawIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="9" r="1.8" fill="currentColor"/><circle cx="10.5" cy="5.8" r="1.8" fill="currentColor"/><circle cx="14.5" cy="5.8" r="1.8" fill="currentColor"/><circle cx="18" cy="9" r="1.8" fill="currentColor"/><path d="M12.5 11c-2.6 0-5.5 3.6-5.5 6 0 1.7 1.3 2.5 2.8 2.5 1.2 0 1.8-.6 2.7-.6s1.5.6 2.7.6c1.5 0 2.8-.8 2.8-2.5 0-2.4-2.9-6-5.5-6z" fill="currentColor"/></svg>';
+      let petPhotoFile = null; let petPhotoUrl = '';
+      const petPhotoStatus = (text, kind) => { const el = $('[data-pet-photo-status]', petForm); el.textContent = text; el.className = 'pp-photo-status' + (kind ? ' ' + kind : ''); };
+      function setPetPhoto(file, p) {
+        if (petPhotoUrl) { URL.revokeObjectURL(petPhotoUrl); petPhotoUrl = ''; }
+        petPhotoFile = file;
+        const preview = $('[data-pet-photo-preview]', petForm);
+        if (file) { petPhotoUrl = URL.createObjectURL(file); preview.innerHTML = `<img src="${petPhotoUrl}" alt="">`; const img = $('img', preview); img.onerror = () => { preview.innerHTML = pawIcon; }; }
+        else preview.innerHTML = p && p.profilePhotoUrl ? `<img src="${imgUrl(p.profilePhotoUrl)}" alt="">` : pawIcon;
+        $('[data-pet-upload-label]', petForm).textContent = file || (p && p.profilePhotoUrl) ? 'Change photo' : 'Upload a photo';
+        petPhotoStatus(file ? (file.name ? file.name + ' — ' : '') + 'saved when you press ' + $('[data-submit]', petForm).textContent : '');
+      }
+      $('[data-pet-upload]', petForm).addEventListener('change', (e) => {
+        const input = e.target; const file = input.files && input.files[0]; input.value = ''; if (!file) return;
+        if (file.size > 10 * 1024 * 1024) { petPhotoStatus('That photo is over 10 MB. Please choose a smaller one.', 'error'); return; }
+        const id = petForm.dataset.petId; setPetPhoto(file, id ? d.pets.find((x) => x.id === id) : null);
+      });
+      // Returns '' on success (or nothing to send), otherwise a message to show on the pet card.
+      async function savePetPhoto(petId, petName) {
+        if (!petPhotoFile) return '';
+        try { const r = await uploadPhoto('/me/pets/' + encodeURIComponent(petId) + '/profile-photo', petPhotoFile); applyPet(r.pet); return ''; }
+        catch (err) { return petName + ' was saved, but the photo didn’t upload: ' + err.message; }
+        finally { setPetPhoto(null, null); }
       }
       petForm.addEventListener('submit', async (e) => {
         e.preventDefault(); if (!validate(petForm)) return;
@@ -413,8 +440,8 @@
         busy(petForm, true); fail(petForm, '');
         try {
           const id = petForm.dataset.petId;
-          if (id) { const r = await api('/me/pets/' + encodeURIComponent(id), { method: 'PATCH', body }); const i = d.pets.findIndex((x) => x.id === id); d.pets[i] = { ...d.pets[i], ...r.pet }; closeDialog(dlg('pet')); renderPets(); renderDiary(); }
-          else { const r = await api('/me/pets', { method: 'POST', body }); d.pets.push(r.pet); photosByPet.set(r.pet.id, []); closeDialog(dlg('pet')); select(r.pet.id); }
+          if (id) { const r = await api('/me/pets/' + encodeURIComponent(id), { method: 'PATCH', body }); const i = d.pets.findIndex((x) => x.id === id); d.pets[i] = { ...d.pets[i], ...r.pet }; if (petPhotoFile) petPhotoStatus('Uploading photo…'); const photoErr = await savePetPhoto(id, r.pet.name || body.name); closeDialog(dlg('pet')); renderPets(); renderDiary(); if (photoErr) photoStatus(photoErr, 'error'); }
+          else { const r = await api('/me/pets', { method: 'POST', body }); d.pets.push(r.pet); photosByPet.set(r.pet.id, []); if (petPhotoFile) petPhotoStatus('Uploading photo…'); const photoErr = await savePetPhoto(r.pet.id, r.pet.name || body.name); closeDialog(dlg('pet')); select(r.pet.id); if (photoErr) photoStatus(photoErr, 'error'); }
         } catch (err) { fail(petForm, err.message); }
         finally { busy(petForm, false); }
       });

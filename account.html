@@ -6,7 +6,7 @@
   <link rel="icon" href="images/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css?v=prices-20261109">
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="portal.css">
+  <link rel="stylesheet" href="portal.css?v=pet-photo-1">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="account-page">
@@ -97,6 +97,14 @@
         <form method="dialog" class="pp-form" novalidate data-pet-form>
           <div class="pp-modal-head"><h2 id="pet-modal-title" data-pet-modal-title>Add a pet</h2><button type="button" class="pp-close" data-close aria-label="Close">×</button></div>
           <div class="pp-fields">
+            <div class="pp-photo-field pp-pet-photo-field">
+              <span class="pp-owner-avatar pp-owner-avatar-sm" data-pet-photo-preview></span>
+              <div class="pp-photo-tools">
+                <span class="pp-photo-field-label">Pet’s photo <span class="pp-label-hint">(optional)</span></span>
+                <label class="pp-photo-change"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span data-pet-upload-label>Upload a photo</span><input type="file" accept="image/*,.heic,.heif" data-pet-upload hidden></label>
+                <p class="pp-photo-status" role="status" aria-live="polite" data-pet-photo-status></p>
+              </div>
+            </div>
             <label for="pf-name">Pet’s name<input id="pf-name" name="name" required maxlength="80" autocomplete="off"></label>
             <div class="pp-two-fields">
               <label for="pf-species">Species<select id="pf-species" name="species" required></select></label>
@@ -181,5 +189,5 @@
       </dialog>
     </main>
   </div>
-  <script src="portal.js?v=admin-sidebar-1"></script>
+  <script src="portal.js?v=pet-photo-1"></script>
 </body></html>

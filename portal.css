@@ -302,3 +302,9 @@ img.pp-avatar { object-fit: cover; }
 @media (max-width: 500px) { .pp-preferences { padding: 1rem; } .pp-preference { padding: .8rem; } }
 
 .pp-btn.pp-btn-danger{background:#9b2c2c;color:#fff;border-color:#9b2c2c}.pp-delete-customer{display:block;margin-top:.6rem;color:#9b2c2c!important}#delete-customer-dialog{max-width:560px}#delete-customer-warning{line-height:1.65}#delete-customer-status{overflow-wrap:anywhere}
+/* Pet photo picker at the top of the add / edit pet form */
+.pp-pet-photo-field { margin-bottom: .2rem; }
+.pp-photo-field-label { color: var(--navy); font-size: .9rem; font-weight: 600; }
+.pp-pet-photo-field .pp-owner-avatar { overflow: hidden; }
+.pp-pet-photo-field .pp-owner-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pp-pet-photo-field .pp-photo-change { display: inline-flex; }
