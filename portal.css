@@ -302,9 +302,18 @@ img.pp-avatar { object-fit: cover; }
 @media (max-width: 500px) { .pp-preferences { padding: 1rem; } .pp-preference { padding: .8rem; } }
 
 .pp-btn.pp-btn-danger{background:#9b2c2c;color:#fff;border-color:#9b2c2c}.pp-delete-customer{display:block;margin-top:.6rem;color:#9b2c2c!important}#delete-customer-dialog{max-width:560px}#delete-customer-warning{line-height:1.65}#delete-customer-status{overflow-wrap:anywhere}
-/* Pet photo picker at the top of the add / edit pet form */
-.pp-pet-photo-field { margin-bottom: .2rem; }
+/* Pet photo drop zone at the top of the add / edit pet form */
+.pp-pet-photo-field { display: grid; gap: .4rem; margin-bottom: .2rem; }
 .pp-photo-field-label { color: var(--navy); font-size: .9rem; font-weight: 600; }
-.pp-pet-photo-field .pp-owner-avatar { overflow: hidden; }
-.pp-pet-photo-field .pp-owner-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pp-pet-photo-field .pp-photo-change { display: inline-flex; }
+.pp-fields label.pp-dropzone { position: relative; display: flex; align-items: center; gap: 1rem; padding: 1rem 1.1rem; border: 2px dashed #b9acee; border-radius: 14px; background: #faf8ff; cursor: pointer; font-weight: 400; transition: background-color .15s, border-color .15s; }
+.pp-fields label.pp-dropzone:hover, .pp-fields label.pp-dropzone.is-dragover { border-color: var(--pp-purple); background: #f1ecff; }
+.pp-fields label.pp-dropzone.is-dragover { border-style: solid; }
+.pp-dropzone:focus-within { outline: 3px solid rgba(105, 80, 232, .55); outline-offset: 2px; }
+.pp-dropzone-preview { width: 72px; height: 72px; flex: none; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: #e6defc; color: var(--pp-purple); }
+.pp-dropzone-preview svg { width: 34px; height: 34px; }
+.pp-dropzone-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pp-dropzone-text { display: grid; gap: .15rem; color: var(--navy); font-size: .92rem; }
+.pp-dropzone-text strong { font-size: 1rem; font-weight: 700; }
+.pp-dropzone-link { color: var(--pp-purple); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.pp-dropzone-text small { color: #5b6570; font-size: .8rem; }
+.pp-dropzone-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); }

@@ -416,13 +416,29 @@
         const preview = $('[data-pet-photo-preview]', petForm);
         if (file) { petPhotoUrl = URL.createObjectURL(file); preview.innerHTML = `<img src="${petPhotoUrl}" alt="">`; const img = $('img', preview); img.onerror = () => { preview.innerHTML = pawIcon; }; }
         else preview.innerHTML = p && p.profilePhotoUrl ? `<img src="${imgUrl(p.profilePhotoUrl)}" alt="">` : pawIcon;
-        $('[data-pet-upload-label]', petForm).textContent = file || (p && p.profilePhotoUrl) ? 'Change photo' : 'Upload a photo';
+        const hasPhoto = file || (p && p.profilePhotoUrl);
+        $('[data-pet-upload-label]', petForm).textContent = hasPhoto ? 'Drag and drop a new photo here' : 'Drag and drop a photo here';
+        $('[data-pet-upload-sub]', petForm).textContent = hasPhoto ? 'or click to choose a different file' : 'or click to choose a file';
         petPhotoStatus(file ? (file.name ? file.name + ' — ' : '') + 'saved when you press ' + $('[data-submit]', petForm).textContent : '');
       }
-      $('[data-pet-upload]', petForm).addEventListener('change', (e) => {
-        const input = e.target; const file = input.files && input.files[0]; input.value = ''; if (!file) return;
+      function takePetPhoto(file) {
+        if (!file) return;
+        if (!/^image\//.test(file.type) && !/\.(hei[cf]|jpe?g|png|webp|gif)$/i.test(file.name || '')) { petPhotoStatus('That file isn’t a photo. Please choose a JPG, PNG or HEIC image.', 'error'); return; }
         if (file.size > 10 * 1024 * 1024) { petPhotoStatus('That photo is over 10 MB. Please choose a smaller one.', 'error'); return; }
         const id = petForm.dataset.petId; setPetPhoto(file, id ? d.pets.find((x) => x.id === id) : null);
+      }
+      $('[data-pet-upload]', petForm).addEventListener('change', (e) => {
+        const input = e.target; const file = input.files && input.files[0]; input.value = ''; takePetPhoto(file);
+      });
+      // Drag and drop: the zone highlights while a file is over it. Drops anywhere else in the pet
+      // form are swallowed so a missed drop can't make the browser open the image and leave the page.
+      const dropzone = $('[data-pet-dropzone]', petForm); let dragDepth = 0;
+      dropzone.addEventListener('dragenter', (e) => { e.preventDefault(); dragDepth++; dropzone.classList.add('is-dragover'); });
+      dropzone.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) dropzone.classList.remove('is-dragover'); });
+      dlg('pet').addEventListener('dragover', (e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = dropzone.contains(e.target) ? 'copy' : 'none'; });
+      dlg('pet').addEventListener('drop', (e) => {
+        e.preventDefault(); dragDepth = 0; dropzone.classList.remove('is-dragover');
+        if (dropzone.contains(e.target)) takePetPhoto(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]);
       });
       // Returns '' on success (or nothing to send), otherwise a message to show on the pet card.
       async function savePetPhoto(petId, petName) {
